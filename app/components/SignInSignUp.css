@@ -1,0 +1,135 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 600px;
+}
+
+.switch-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 160px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  box-shadow: 0px 0px 20.799999237060547px rgba(64, 59, 97, 0.10);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 30px;
+  width: 70px;
+  left: 4px;
+  bottom: 2px;
+  background-color: #BA5CDB;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+input:checked+.slider {
+  background-color: white;
+}
+
+input:checked+.slider:before {
+  transform: translateX(82px);
+}
+
+.sign-in,
+.sign-up {
+  position: absolute;
+  color: white;
+  transition: color 0.4s;
+}
+
+.sign-in {
+  left: 15px;
+}
+
+.sign-up {
+  right: 12px;
+}
+
+input:checked+.slider .sign-in,
+input:not(:checked)+.slider .sign-up {
+  color: #403B61;
+}
+
+.form-container {
+  width: 300px;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  border: none;
+  border-radius: 30px;
+  box-shadow: 0px 4px 29px rgba(64, 59, 97, 0.15);
+  background-color: white;
+}
+
+form {
+  padding: 25px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+form h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+form h2,
+form p {
+  color: #403B61;
+}
+
+form p {
+  padding-bottom: 10px;
+}
+
+input {
+  width: 230px;
+  margin-bottom: 30px;
+  padding: 5px 15px;
+  font-size: 16px;
+  background-color: #F2F1F7;
+  border: none;
+  border-radius: 30px;
+  text-align: left;
+}
+
+button {
+  padding: 5px;
+  background-image: linear-gradient(90deg, #BA5CDB 0%, #42A7F1 100%);
+  border-radius: 50px;
+  color: white;
+  font-size: 20px;
+  border: none;
+  cursor: pointer;
+}
