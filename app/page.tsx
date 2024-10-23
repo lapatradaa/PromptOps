@@ -18,9 +18,7 @@ export default function Home() {
           <p>Optimizes & Tests prompts for LLM with <span>PromptOps</span></p>
           <button className='startButton'>Get Start &gt;</button>
         </div>
-        {/* <div className='illustrationContainer'> */}
-          <img src='/images/illustration1.svg'></img>
-        {/* </div> */}
+        <img src='/images/illustration1.svg'></img>
       </main>
       <footer></footer>
     </div>

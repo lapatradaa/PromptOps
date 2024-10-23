@@ -12,6 +12,10 @@ header, main {
   padding: 0px 150px 0 150px;
 }
 
+header {
+  padding-top: 80px;
+}
+
 /* 
 header {
   background-color: aqua;
