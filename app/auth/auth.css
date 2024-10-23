@@ -1,0 +1,66 @@
+/* Background container with circles */
+.decoratedBackground {
+    position: relative;
+    height: 100vh;
+    background-color: #F8F7FF;
+    overflow: hidden;
+}
+
+.decoratedBackground::before,
+.decoratedBackground::after,
+.bottomCircle {
+    content: '';
+    position: absolute;
+    border-radius: 9999px;
+    background: linear-gradient(180deg, rgba(66, 167, 241, 0.30) 0%, rgba(186, 92, 219, 0.30) 100%);
+    filter: blur(100px);
+    box-shadow: 500px 500px 500px rgba(0, 0, 0, 0.1);
+    transform-origin: 0 0;
+    transform: rotate(57deg);
+}
+
+/* Circle at center left */
+.decoratedBackground::before {
+    width: 500px;
+    height: 500px;
+    left: 30px;
+    top: 40%;
+    transform: translateY(-50%) rotate(57deg);
+}
+
+/* Circle at top right */
+.decoratedBackground::after {
+    width: 500px;
+    height: 500px;
+    right: -450px;
+    top: -250px;
+    transform: rotate(57deg);
+}
+
+/* Circle at center bottom */
+.bottomCircle {
+    width: 500px;
+    height: 500px;
+    left: 70%;
+    bottom: -150px;
+    transform: translateX(-50%) rotate(57deg);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+}
+
+header .iconContainer {
+    display: flex;
+    align-items: center;
+}
+
+.iconContainer img {
+    width: 35%;
+}
+
+.iconContainer p {
+    font-size: 30px;
+    color: #403B61;
+}
