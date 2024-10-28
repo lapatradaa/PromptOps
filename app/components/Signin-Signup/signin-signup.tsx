@@ -1,5 +1,5 @@
 import { useState } from "react";
-import './SignInSignUp.css'; // Use a global CSS file for styling
+import './signin-signup.css'; // Use a global CSS file for styling
 
 export default function SignInSignUp() {
     const [isSignUp, setIsSignUp] = useState(false);

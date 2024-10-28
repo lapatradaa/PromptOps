@@ -1,7 +1,7 @@
 "use client";
 
 import './auth.css';
-import SignInSignUp from '../components/SignInSignUp'; 
+import SignInSignUp from '../components/Signin-Signup/signin-signup'; 
 
 export default function Auth() {
     return (
