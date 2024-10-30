@@ -5,7 +5,7 @@ export default function Home() {
     <div>
       <header>
         <div className='iconContainer'>
-          <img src="/images/promptops_icon.svg"></img>
+          <img src="/icons/promptops_icon.svg"></img>
           <p>PromptOps</p>
         </div>
         <div className='signIn-signUp-Container'>
