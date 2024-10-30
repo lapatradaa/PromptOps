@@ -2,12 +2,13 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { FaRegFolderOpen } from "react-icons/fa";
-import { MdOutlineFilePresent } from "react-icons/md"
+// import { FiSearch } from "react-icons/fi";
+import { MdOutlineFilePresent } from "react-icons/md";
 import "./projects.css";
 import MyProject from "../components/My-Project/my-project";
 import InputFormat from "../components/Input-Format/input-format";
 
-const Dashboard: React.FC = () => {
+const Projects: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>('myProjects');
   const [indicatorPosition, setIndicatorPosition] = useState<number>(0);
   const menuItemRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -22,7 +23,7 @@ const Dashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="dashboard">
+    <div className="projects">
       <div className="left-section">
         <header>
           <div className='iconContainer'>
@@ -57,12 +58,26 @@ const Dashboard: React.FC = () => {
         </main>
       </div>
       <div className="center-section">
-        {activeMenu === 'myProjects' && <MyProject />}
-        {activeMenu === 'format' && <InputFormat />}
+        <header>
+          <input
+            type="text"
+            className="search-bar"
+            placeholder="Search here..."
+          />
+          <button>+ New Project</button>
+        </header>
+        <main>
+          {activeMenu === 'myProjects' && <MyProject />}
+          {activeMenu === 'format' && <InputFormat />}
+        </main>
       </div>
-      <div className="right-section">Right Section</div>
+      <div className="right-section">
+        <header>
+          <p>Static History</p>
+        </header>
+      </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default Projects;

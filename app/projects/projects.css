@@ -1,4 +1,4 @@
-.dashboard {
+.projects {
     display: flex;
     height: 100vh;
     background-color: #F8F7FF;
@@ -12,8 +12,8 @@
     flex-direction: column;
 }
 
-header {
-    padding: 45px 16px 25px 16px;
+.left-section header {
+    padding: 75px 16px 25px 16px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -36,7 +36,7 @@ header {
     color: #403B61;
 }
 
-main {
+.left-section main {
     padding: 0px;
 }
 
@@ -56,7 +56,7 @@ main {
 .menuContainer p {
     padding: 10px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .menuItem {
@@ -77,8 +77,8 @@ main {
 }
 
 .menuItem svg {
-    height: 12%;
-    width: 12%;
+    height: 8%;
+    width: 8%;
     margin-right: 10px;
     color: #9F9DB0;
 }
@@ -96,20 +96,59 @@ main {
 }
 
 .center-section {
-    /* background-color: #F8F7FF; */
     flex: 6;
     color: black;
+    /* background-color: #BA5CDB; */
+}
+
+.center-section header {
+    padding: 75px;
+
     display: flex;
-    align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+}
+
+header input {
+    height: 45px;
+    width: 60%;
+    padding: 0 20px;
+    border-radius: 50px;
+    border: none;
+    font-size: 18px;
+    background-color: white;
+}
+
+header input:focus {
+    outline: none;
+    /* border: solid 2px #9F19CC; */
+}
+
+header button {
+    width: 20%;
+    height: 45px;
+    border: solid 2px #9F19CC;
+    border-radius: 50px;
+    background: none;
+    color: #9F19CC;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.center-section main {
+    padding: 0 75px 0 75px;
 }
 
 .right-section {
     background-color: white;
     flex: 2;
     color: black;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    /* display: flex; */
+    /* align-items: center;
+    justify-content: center; */
     border-radius: 50px 0 0 50px;
+}
+
+.right-section header {
+    padding: 80px 0 0 40px;
+    font-size: 22px;
 }
