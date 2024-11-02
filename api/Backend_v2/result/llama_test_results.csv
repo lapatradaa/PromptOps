@@ -1,0 +1,91 @@
+name,description,test_type,prompt,expected_result,perturb_text,pass_condition,capability,response_original,response_perturb,score_original,score_perturb,fail
+Test Robustness,A test with Robustness perturbation,Robustness Test,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing seedless cucumber good for a gardener with entomophobia?
+",Yes,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing seedless cucumber good for a gardener with entomophobia?
+",increase,,No,No,0.7000374794006348,0.7000374794006348,False
+Test Taxonomy,A test with Taxonomy perturbation,Taxonomy Test,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing seedless cucumber just for a gardener with entomophobia ?
+",Yes,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing seedless cucumber just for a gardener with entomophobia ?
+",increase,,No,No,0.7000374794006348,0.7000374794006348,False
+Test Negation,A test with Negation perturbation,Negation Test,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing seedless cucumber good for a gardener with entomophobia?
+",Yes,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing seedless cucumber good for a gardener with entomophobia?
+",increase,,No,No.,0.7000374794006348,0.7110027074813843,False
+Test Coref,A test with Coref perturbation,Coref Test,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing seedless cucumber good for a gardener with entomophobia who a morbid fear of insects?
+",Yes,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing seedless cucumber good for a gardener with entomophobia who a morbid fear of insects?
+",increase,,No.,No.,0.7110027074813843,0.7110027074813843,False
+Test SRL,A test with SRL perturbation,SRL Test,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing (the action) seedless cucumber good for a gardener with entomophobia ?
+",Yes,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing (the action) seedless cucumber good for a gardener with entomophobia ?
+",increase,,No,No,0.7000374794006348,0.7000374794006348,False
+Test Logic,A test with Logic perturbation,Logic Test,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing seedless cucumber logically true for a gardener with entomophobia?
+",Yes,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing seedless cucumber logically true for a gardener with entomophobia?
+",increase,,No.,No.,0.7110027074813843,0.7110027074813843,False
+Test Fairness,A test with Fairness perturbation,Fairness Test,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Growing seedless cucumbers may be beneficial for gardeners who have entomophobia (fear of insects) as it reduces the likelihood of encountering pests, such as aphids or whiteflies, that are commonly associated with traditional cucumber cultivation.
+",Yes,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Growing seedless cucumbers may be beneficial for gardeners who have entomophobia (fear of insects) as it reduces the likelihood of encountering pests, such as aphids or whiteflies, that are commonly associated with traditional cucumber cultivation.
+",increase,,Yes,Yes,1.0,1.0,False
+Test Temporal,A test with Temporal perturbation,Temporal Test,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Growing seedless cucumber today can be beneficial for a gardener with entomophobia as it reduces the likelihood of encountering insects, but it's essential to note that some gardeners may still experience anxiety when handling the plant.
+",Yes,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Growing seedless cucumber today can be beneficial for a gardener with entomophobia as it reduces the likelihood of encountering insects, but it's essential to note that some gardeners may still experience anxiety when handling the plant.
+",increase,,Yes,Yes.,1.0,0.9167611598968506,True
+Test NER,A test with NER perturbation,NER Test,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing seedless cucumber good for a gardener with entomophobia ?
+",Yes,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is growing seedless cucumber good for a gardener with entomophobia ?
+",increase,,No.,No,0.7110027074813843,0.7000374794006348,True
+Test Vocabulary,A test with Vocabulary perturbation,Vocabulary Test,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is away growing seedless cucumber good for a gardener with entomophobia ?
+",Yes,"
+Instruction: Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).
+Context: Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.
+Question: Is away growing seedless cucumber good for a gardener with entomophobia ?
+",increase,,No,No,0.7000374794006348,0.7000374794006348,False
