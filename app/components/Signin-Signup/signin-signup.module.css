@@ -6,7 +6,7 @@
   height: 600px;
 }
 
-.switch-container {
+.switchContainer {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
@@ -50,40 +50,41 @@
   left: 4px;
   bottom: 2px;
   background-color: #BA5CDB;
-  transition: 0.4s;
+  transition: 0.2s;
   border-radius: 34px;
 }
 
-input:checked+.slider {
+.switch input:checked + .slider {
   background-color: white;
 }
 
-input:checked+.slider:before {
+.switch input:checked + .slider:before {
   transform: translateX(82px);
 }
 
-.sign-in,
-.sign-up {
+.signIn,
+.signUp {
   position: absolute;
   color: white;
-  transition: color 0.4s;
+  transition: color 0.2s;
+  z-index: 1;
 }
 
-.sign-in {
+.signIn {
   left: 15px;
 }
 
-.sign-up {
+.signUp {
   right: 12px;
 }
 
-input:checked+.slider .sign-in,
-input:not(:checked)+.slider .sign-up {
+.switch input:checked + .slider .signIn,
+.switch input:not(:checked) + .slider .signUp {
   color: #403B61;
 }
 
-.form-container {
-  width: 300px;
+.formContainer {
+  width: 350px;
   display: flex;
   justify-content: center;
   padding: 20px;
@@ -93,28 +94,26 @@ input:not(:checked)+.slider .sign-up {
   background-color: white;
 }
 
-form {
+.form {
   padding: 25px 0;
   display: flex;
   flex-direction: column;
 }
 
-form h2 {
+.form h2 {
   text-align: center;
   margin-bottom: 20px;
-}
-
-form h2,
-form p {
+  font-weight: 600;
   color: #403B61;
 }
 
-form p {
+.form p {
+  color: #403B61;
   padding-bottom: 10px;
 }
 
-input {
-  width: 230px;
+.form input {
+  width: 280px;
   margin-bottom: 30px;
   padding: 5px 15px;
   font-size: 16px;
@@ -122,14 +121,17 @@ input {
   border: none;
   border-radius: 30px;
   text-align: left;
+  font-family: inherit;
 }
 
-button {
+.form button {
   padding: 5px;
   background-image: linear-gradient(90deg, #BA5CDB 0%, #42A7F1 100%);
   border-radius: 50px;
   color: white;
   font-size: 20px;
+  font-weight: 600;
   border: none;
   cursor: pointer;
+  font-family: inherit;
 }

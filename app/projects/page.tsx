@@ -1,10 +1,8 @@
 "use client";
-
 import React, { useState, useRef, useEffect } from "react";
 import { FaRegFolderOpen } from "react-icons/fa";
-// import { FiSearch } from "react-icons/fi";
 import { MdOutlineFilePresent } from "react-icons/md";
-import "./projects.css";
+import styles from "./projects.module.css";
 import MyProject from "../components/My-Project/my-project";
 import InputFormat from "../components/Input-Format/input-format";
 
@@ -23,23 +21,23 @@ const Projects: React.FC = () => {
   }, []);
 
   return (
-    <div className="projects">
-      <div className="left-section">
-        <header>
-          <div className='iconContainer'>
-            <img src="/icons/promptops_icon.svg" alt="PromptOps Icon"></img>
+    <div className={styles.projects}>
+      <div className={styles.leftSection}>
+        <header className={styles.leftHeader}>
+          <div className={styles.iconContainer}>
+            <img src="/icons/promptops_icon.svg" alt="PromptOps Icon" />
             <p>PromptOps</p>
           </div>
         </header>
         <main>
-          <div className={`menuContainer`}>
+          <div className={styles.menuContainer}>
             <div
-              className="indicator"
+              className={styles.indicator}
               style={{ top: `${indicatorPosition + 8}px` }}
             ></div>
-            <h2>Projects</h2>
+            <h2 className={styles.h2}>Projects</h2>
             <div
-              className={`menuItem ${activeMenu === 'myProjects' ? 'active' : ''}`}
+              className={`${styles.menuItem} ${activeMenu === 'myProjects' ? styles.active : ''}`}
               onClick={() => handleMenuClick('myProjects', 0)}
               ref={(el) => (menuItemRefs.current[0] = el)}
             >
@@ -47,7 +45,7 @@ const Projects: React.FC = () => {
               <p>My Projects</p>
             </div>
             <div
-              className={`menuItem ${activeMenu === 'format' ? 'active' : ''}`}
+              className={`${styles.menuItem} ${activeMenu === 'format' ? styles.active : ''}`}
               onClick={() => handleMenuClick('format', 1)}
               ref={(el) => (menuItemRefs.current[1] = el)}
             >
@@ -57,22 +55,22 @@ const Projects: React.FC = () => {
           </div>
         </main>
       </div>
-      <div className="center-section">
-        <header>
+      <div className={styles.centerSection}>
+        <header className={styles.centerHeader}>
           <input
             type="text"
-            className="search-bar"
+            className={styles.searchBar}
             placeholder="Search here..."
           />
-          <button>+ New Project</button>
+          <button className={styles.newProjectBtn}>+ New Project</button>
         </header>
-        <main>
+        <main className={styles.centerMain}>
           {activeMenu === 'myProjects' && <MyProject />}
           {activeMenu === 'format' && <InputFormat />}
         </main>
       </div>
-      <div className="right-section">
-        <header>
+      <div className={styles.rightSection}>
+        <header className={styles.rightHeader}>
           <p>Static History</p>
         </header>
       </div>

@@ -1,46 +1,49 @@
-import './signin-signup.css';
+// components/Signin-Signup/signin-signup.tsx
+'use client';
+import styles from './signin-signup.module.css';
 import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 export default function SignInSignUp() {
   const [isSignUp, setIsSignUp] = useState(false);
+  const router = useRouter();
+  
   const handleToggle = () => setIsSignUp(!isSignUp);
-//   const navigate = useNavigate();
 
-//   const handleSignIn = (e: React.FormEvent<HTMLFormElement>) => {
-//     e.preventDefault(); // Prevents any default form submission behavior
-//     navigate('/projects'); // Navigates to the /projects page
-//   };
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    router.push('/projects');
+  };
 
   return (
-    <div className="container">
-      <div className="switch-container">
-        <label className="switch">
+    <div className={styles.container}>
+      <div className={styles.switchContainer}>
+        <label className={styles.switch}>
           <input type="checkbox" onChange={handleToggle} checked={isSignUp} />
-          <span className="slider">
-            <span className="sign-in">Sign In</span>
-            <span className="sign-up">Sign Up</span>
+          <span className={styles.slider}>
+            <span className={styles.signIn}>Sign In</span>
+            <span className={styles.signUp}>Sign Up</span>
           </span>
         </label>
       </div>
-      <div className="form-container">
+      <div className={styles.formContainer}>
         {isSignUp ? (
-          <SignUpForm />
+          <SignUpForm onSubmit={handleSubmit} />
         ) : (
-          <SignInForm />
+          <SignInForm onSubmit={handleSubmit} />
         )}
       </div>
     </div>
   );
 }
 
-// type SignInFormProps = {
-//   onSignIn: (e: React.FormEvent<HTMLFormElement>) => void;
-// };
+interface FormProps {
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+}
 
-function SignInForm() {
+function SignInForm({ onSubmit }: FormProps) {
   return (
-    <form>
+    <form onSubmit={onSubmit} className={styles.form}>
       <h2>Sign In</h2>
       <p>Username</p>
       <input type="text" required />
@@ -51,9 +54,9 @@ function SignInForm() {
   );
 }
 
-function SignUpForm() {
+function SignUpForm({ onSubmit }: FormProps) {
   return (
-    <form>
+    <form onSubmit={onSubmit} className={styles.form}>
       <h2>Sign Up</h2>
       <p>Username</p>
       <input type="text" required />

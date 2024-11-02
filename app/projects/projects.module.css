@@ -4,7 +4,7 @@
     background-color: #F8F7FF;
 }
 
-.left-section {
+.leftSection {
     background-color: #FFFFFF;
     flex: 2;
     color: black;
@@ -12,7 +12,7 @@
     flex-direction: column;
 }
 
-.left-section header {
+.leftHeader {
     padding: 75px 16px 25px 16px;
     display: flex;
     align-items: center;
@@ -36,16 +36,11 @@
     color: #403B61;
 }
 
-.left-section main {
-    padding: 0px;
-}
-
 .menuContainer {
     position: relative;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    /* background-color: #403B61; */
     padding: 100px 0px 100px 80px;
 }
 
@@ -70,17 +65,17 @@
     color: #9F9DB0;
 }
 
-.menuItem.active p,
-.menuItem.active svg {
-    color: #403B61;
-    opacity: 1;
-}
-
 .menuItem svg {
     height: 8%;
     width: 8%;
     margin-right: 10px;
     color: #9F9DB0;
+}
+
+.menuItem.active p,
+.menuItem.active svg {
+    color: #403B61;
+    opacity: 1;
 }
 
 .indicator {
@@ -95,20 +90,23 @@
     transition: top 0.3s ease;
 }
 
-.center-section {
-    flex: 6;
-    color: black;
-    /* background-color: #BA5CDB; */
+.h2 {
+    font-weight: 500;
+    color: #403B61;
 }
 
-.center-section header {
-    padding: 75px;
+.centerSection {
+    flex: 6;
+    color: black;
+}
 
+.centerHeader {
+    padding: 75px;
     display: flex;
     justify-content: space-between;
 }
 
-header input {
+.searchBar {
     height: 45px;
     width: 60%;
     padding: 0 20px;
@@ -116,14 +114,17 @@ header input {
     border: none;
     font-size: 18px;
     background-color: white;
+    font-family: inherit;
+    font-weight: 400;
+    color: #403B61;
 }
 
-header input:focus {
+.searchBar:focus {
     outline: none;
-    /* border: solid 2px #9F19CC; */
+    box-shadow: 0 0 0 2px #BA5CDB;
 }
 
-header button {
+.newProjectBtn {
     width: 20%;
     height: 45px;
     border: solid 2px #9F19CC;
@@ -134,21 +135,24 @@ header button {
     font-size: 18px;
 }
 
-.center-section main {
-    padding: 0 75px 0 75px;
+.newProjectBtn:hover {
+    background: linear-gradient(150deg, #BA5CDB 0%, #00CFFC 100%);
+    color: white;
+    border: none;
 }
 
-.right-section {
+.centerMain {
+    padding: 0 75px;
+}
+
+.rightSection {
     background-color: white;
     flex: 2;
     color: black;
-    /* display: flex; */
-    /* align-items: center;
-    justify-content: center; */
     border-radius: 50px 0 0 50px;
 }
 
-.right-section header {
+.rightHeader {
     padding: 80px 0 0 40px;
     font-size: 22px;
 }

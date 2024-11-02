@@ -1,3 +1,12 @@
+.container {
+    padding: 20px;
+}
+
+.h2 {
+    font-weight: 600;
+    color: #403B61;
+}
+
 .recentContainer {
     display: flex;
     justify-content: space-between;
@@ -15,7 +24,6 @@
 
 .iconWithText {
     position: relative;
-    /* display: inline-block; */
 }
 
 .iconText {
@@ -25,15 +33,14 @@
     transform: translate(-50%, -50%);
     font-size: 20px;
     color: white;
-    font-weight: bold;
     pointer-events: none;
+    font-weight: 500;
 }
 
 .allProjects {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* flex-direction: column; */
     margin-bottom: 20px;
 }
 
@@ -62,10 +69,21 @@
     justify-content: space-between;
     align-items: center;
     background-color: white;
-    padding: 20px 25px 20px 25px;
+    padding: 20px 25px;
     margin: 20px 0;
     border-radius: 25px;
     cursor: pointer;
+}
+
+.projectInfo {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.projectInfo p {
+    font-weight: 500;
+    color: #403B61;
 }
 
 .projectContainer svg {
@@ -78,10 +96,4 @@
 .projectContainer p {
     margin: 0;
     font-size: 20px;
-}
-
-.projectContainer div {
-    display: flex;
-    align-items: center;
-    gap: 30px;
 }

@@ -1,9 +1,14 @@
-header {
-    display: flex;
-    justify-content: space-between;
+.container {
+    font-family: inherit;
 }
 
-header .iconContainer {
+.header {
+    display: flex;
+    justify-content: space-between;
+    padding: 80px 150px 0 150px;
+}
+
+.iconContainer {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -16,101 +21,97 @@ header .iconContainer {
 .iconContainer p {
     font-size: 30px;
     color: #403B61;
+    font-family: inherit;
 }
 
-.signIn-signUp-Container {
+.signInSignUpContainer {
     display: flex;
     align-items: center;
 }
 
-.signIn-signUp-Container button {
+.signInSignUpContainer button {
     margin: 0 10px;
     padding: 5px 25px;
+    font-family: inherit;
+    font-weight: 500;
+    /* Explicitly inherit Kanit font */
 }
 
-.signIn-signUp-Container .signUp {
+.signUp {
     background: none;
     border: none;
-
     cursor: pointer;
-
     background-image: linear-gradient(to bottom, #BA5CDB, #00CFFC);
     background-clip: text;
+    -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    font-size: 20px;
+    font-weight: bold;
+    font-family: inherit;
 }
 
-.signIn-signUp-Container .signIn {
+.signIn {
     background-image: linear-gradient(2deg, #9F19CC 0%, #00CFFC 100%);
     border-radius: 50px;
     border: none;
-
     cursor: pointer;
     color: white;
-}
-
-.signIn, .signUp {
     font-size: 20px;
     font-weight: bold;
+    font-family: inherit;
 }
 
-main {
+.main {
     display: flex;
     justify-content: space-between;
+    padding: 0 150px;
 }
 
-main .descContainer {
+.descContainer {
     position: relative;
     bottom: 40px;
     width: 35%;
-
     display: flex;
     flex-direction: column;
     justify-content: center;
-
     margin: 100px 0;
 }
 
-main .descContainer p {
+.descContainer p {
     font-size: 80px;
     font-weight: 600;
     color: #403B61;
-
     line-height: 110%;
+    font-family: inherit;
 }
 
 .descContainer p span {
     color: #BA5CDB;
 }
 
-main button.startButton {
+.startButton {
     position: relative;
     top: 30px;
-
     width: 45%;
     height: 10%;
-
     border-radius: 50px;
     border: none;
     background-image: linear-gradient(to bottom right, #BA5CDB, #00CFFC);
-
     font-size: 20px;
     color: white;
-
     cursor: pointer;
+    font-family: inherit;
 }
 
-main img {
-    /* width: 100%; */
+.main img {
     max-width: 750px;
 }
 
-footer {
+.footer {
     position: absolute;
     bottom: 0;
-
     width: 100%;
     height: 120px;
-    
     background-image: linear-gradient(90deg, #416EDA 0%, #9F19CC 100%);
     border-radius: 30px 30px 0 0;
 }
