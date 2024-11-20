@@ -73,12 +73,27 @@
     margin: 20px 0;
     border-radius: 25px;
     cursor: pointer;
+    border: 3px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.projectContainer.selected {
+    border: 3px solid #9DC4E1;
+    box-shadow: 0 2px 8px rgba(157, 196, 225, 0.2);
 }
 
 .projectInfo {
     display: flex;
     align-items: center;
     gap: 30px;
+    user-select: none;
+    /* Prevents text selection */
+    -webkit-user-select: none;
+    /* For Safari */
+    -moz-user-select: none;
+    /* For Firefox */
+    -ms-user-select: none;
+    /* For IE/Edge */
 }
 
 .projectInfo p {
