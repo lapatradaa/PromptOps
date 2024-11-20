@@ -1,8 +1,8 @@
 "use client";
 import { MdCancel } from 'react-icons/md';
 import Link from 'next/link';
-import styles from './auth.module.css';
-import SignInSignUp from '../components/Signin-Signup/signin-signup';
+import styles from './Auth.module.css';
+import SignInSignUp from '../components/SignInSignUp/SignInSignUp';
 
 export default function Auth() {
     return (

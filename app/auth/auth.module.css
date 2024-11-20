@@ -17,6 +17,7 @@
     box-shadow: 500px 500px 500px rgba(0, 0, 0, 0.1);
     transform-origin: 0 0;
     transform: rotate(57deg);
+    z-index: 0;
 }
 
 /* Circle at center left */
@@ -49,12 +50,17 @@
 .header {
     display: flex;
     justify-content: space-between;
+    padding: 80px 150px 0 150px;
+    position: relative;
+    z-index: 2;
 }
 
 .header .iconContainer {
     display: flex;
     align-items: center;
     gap: 10px;
+    position: relative;
+    z-index: 2;
 }
 
 .header svg {
@@ -62,12 +68,6 @@
     height: 50px;
     color: #403B61;
     cursor: pointer;
-    position: relative;
-    z-index: 1;
-}
-
-.header {
-    padding: 80px 150px 0 150px;
 }
 
 .header .cancelLink {
@@ -76,7 +76,8 @@
 }
 
 .main {
-    padding: 0px 150px 0 150px;
+    position: relative;
+    z-index: 1; 
 }
 
 .iconContainer img {
