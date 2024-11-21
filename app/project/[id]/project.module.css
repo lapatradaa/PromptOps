@@ -1,0 +1,475 @@
+.pageContainer {
+    min-height: 100vh;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    background-color: white;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.headerLeft {
+    flex: 1;
+}
+
+.headerCenter {
+    flex: 2;
+    text-align: center;
+}
+
+.headerRight {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.backLinkContainer {
+    width: 32px;
+    height: 32px;
+}
+
+.backLink {
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.backIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    font-size: 2rem;
+    color: #9F9DB0;
+    transition: color 0.2s ease;
+}
+
+.backIcon:hover {
+    color: #4b5563;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    font-family: inherit;
+    color: #111827;
+    margin: 0;
+}
+
+.playButton,
+.pauseButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    cursor: pointer;
+    position: relative;
+    transition: opacity 0.2s ease;
+}
+
+.pauseButton svg {
+    color: #9996AC;
+}
+
+.playButton svg {
+    fill: url(#buttonGradient);
+}
+
+.mainGrid {
+    display: flex;
+    /* Change to flex to keep main content fixed */
+    height: calc(100vh - 59px);
+    background-color: white;
+}
+
+.leftSidebar {
+    width: 75px;
+    min-width: 75px;
+    /* Add min-width to prevent shrinking */
+    background-color: white;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 0;
+    gap: 2rem;
+    z-index: 2;
+}
+
+/* Search bar */
+.searchContainer {
+    padding: 16px;
+    border-bottom: 1px solid #F2F1F7;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 8px 16px 8px 36px;
+    border-radius: 20px;
+    border: 1px solid #F2F1F7;
+    background-color: #FAFAFC;
+    font-size: 14px;
+    color: #403B61;
+}
+
+.searchInput::placeholder {
+    color: #9F9DB0;
+    user-select: none;
+}
+
+.searchContainer svg {
+    position: absolute;
+    left: 28px;
+    color: #9996AC;
+    font-size: 16px;
+}
+
+/* Tabs */
+.tabContainer {
+    display: flex;
+    border-bottom: 1px solid #F2F1F7;
+}
+
+.tab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    font-size: 16px;
+    color: #403B61;
+    cursor: pointer;
+    font-weight: 400;
+    background-color: #F2F1F7;
+    transition: color 0.2s ease;
+    border-bottom: 2px solid transparent;
+    position: relative;
+}
+
+.tab.active {
+    color: #BA5CDB;
+    transition: all 0.2s ease;
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    border-radius: 50px;
+    background: linear-gradient(270deg, #9F19CC 0%, #00CFFC 100%);
+}
+
+/* Menu list */
+.menuList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    position: relative;
+    height: 100%;
+}
+
+.menuItem {
+    padding: 12px 16px 12px 35px;
+    display: flex;
+    align-items: center;
+    color: #403B61;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    font-weight: 400;
+    position: relative;
+    user-select: none;
+}
+
+/* Keep dropdown content visible if open */
+.dropdownContent {
+    background-color: white;
+    padding: 8px 10px;
+    animation: slideDown 0.2s ease;
+}
+
+.showRemoveZone~.dropdownContent {
+    display: none;
+}
+
+.menuItem.active {
+    color: #BA5CDB;
+    /* background-color: rgba(186, 92, 219, 0.1); */
+}
+
+/* Add arrow icon for menu items */
+.menuItem::before {
+    content: '›';
+    position: absolute;
+    left: 16px;
+    color: #9996AC;
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+.menuItem.active::before {
+    transform: rotate(90deg);
+    color: #BA5CDB;
+}
+
+/* Ensure proper height for scrolling */
+.secondarySidebar {
+    width: 0;
+    background-color: white;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #F2F1F7;
+    flex-shrink: 0;
+    height: 100%;
+}
+
+.secondarySidebar.show {
+    width: 350px;
+}
+
+/* Update fonts */
+.searchInput,
+.tab,
+.menuItem {
+    font-family: inherit;
+}
+
+/* Main content */
+.mainContent {
+    flex: 1;
+    overflow-y: auto;
+    background-color: white;
+}
+
+/* Menu Items */
+.optionsMenu,
+.llmMenu,
+.chartMenu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+    color: #DDADED;
+}
+
+/* Active states */
+.optionsMenu.active,
+.llmMenu.active,
+.chartMenu.active {
+    color: #BA5CDB;
+    background-color: #F2F1F7;
+}
+
+/* Hover effects */
+.optionsMenu:hover:not(.active),
+.llmMenu:hover:not(.active),
+.chartMenu:hover:not(.active) {
+    background-color: #f3f4f6;
+}
+
+.mainContent {
+    /* padding: 2rem; */
+    overflow-y: auto;
+}
+
+.contentWrapper {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.boardContainer {
+    flex: 1;
+    min-width: 0;
+    /* Prevents flex item from overflowing */
+    position: relative;
+}
+
+.dashboardSidebar {
+    width: 350px;
+    background-color: white;
+    border-left: 1px solid #F2F1F7;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.dashboardHeader {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboardHeader h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #403B61;
+    font-weight: 500;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #9F9DB0;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+    background-color: #F2F1F7;
+    color: #403B61;
+}
+
+.dashboardContent {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.settingGroup {
+    margin-bottom: 24px;
+}
+
+.settingGroup h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: #403B61;
+    font-weight: 500;
+}
+
+.settingItem {
+    margin-bottom: 16px;
+}
+
+.settingItem label {
+    display: block;
+    margin-bottom: 8px;
+    color: #6B7280;
+    font-size: 14px;
+}
+
+.select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    background-color: white;
+    color: #403B61;
+    font-size: 14px;
+}
+
+.select:focus {
+    outline: none;
+    border-color: #BA5CDB;
+    box-shadow: 0 0 0 2px rgba(186, 92, 219, 0.1);
+}
+
+/* Update mainGrid and mainContent to ensure proper layout */
+.mainGrid {
+    display: flex;
+    height: calc(100vh - 59px);
+    background-color: white;
+}
+
+.mainContent {
+    flex: 1;
+    overflow: hidden;
+    background-color: white;
+    display: flex;
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+    .emptyArea {
+        padding: 24px 12px;
+        font-size: 12px;
+    }
+
+    .emptyArea .trashIcon {
+        font-size: 20px;
+    }
+
+    .secondarySidebar.show {
+        width: 200px;
+    }
+
+    .menuItem {
+        padding: 10px 12px 10px 28px;
+        font-size: 13px;
+    }
+
+    .menuItem::before {
+        left: 12px;
+    }
+
+    .searchInput {
+        padding: 6px 12px;
+    }
+
+    .mainGrid {
+        grid-template-columns: 50px 1fr;
+    }
+
+    .leftSidebar {
+        width: 50px;
+        padding: 1rem 0;
+        gap: 1.5rem;
+    }
+
+    .optionsMenu,
+    .llmMenu,
+    .chartMenu {
+        width: 35px;
+        height: 35px;
+        font-size: 1.5rem;
+    }
+
+    .dashboardSidebar {
+        width: 280px;
+    }
+
+    .dashboardHeader {
+        padding: 16px;
+    }
+
+    .dashboardContent {
+        padding: 16px;
+    }
+
+    .settingItem label {
+        font-size: 13px;
+    }
+
+    .select {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}
