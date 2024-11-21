@@ -1,4 +1,3 @@
-// app/page.tsx
 'use client'
 import { useRouter } from 'next/navigation'
 import styles from './homepage.module.css'
@@ -33,7 +32,7 @@ export default function Home() {
           <p>Optimizes & Tests prompts for LLM with <span>PromptOps</span></p>
           <button
             className={styles.startButton}
-            onClick={() => router.push('/projects')}
+            onClick={() => router.push('/overview')}
           >
             Get Start &gt;
           </button>
