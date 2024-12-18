@@ -1,0 +1,4 @@
+Instruction,Context,Question_1,Answer_1,Question,Expected_answer
+Answer the following questions based on the context provided.,Cucumber plants need insects to pollinate them. Seedless cucumber does not require pollination.,Is growing seedless cucumber good for a gardener with entomophobia?,Yes,Can cucumbers grow without insects?,Yes
+Answer the following questions based on the context provided.,Solar panels need sunlight to generate electricity. Modern solar panels work efficiently even on cloudy days.,Can solar panels generate electricity on cloudy days?,Yes,Is sunlight necessary for solar panels to function?,Yes
+Answer the following questions based on the context provided.,Exercise boosts mental health by releasing endorphins. Regular exercise can reduce symptoms of depression and anxiety.,Can regular exercise improve mental health?,Yes,Does exercise help with anxiety?,Yes
