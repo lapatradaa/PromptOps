@@ -1,0 +1,20 @@
+original_prompt,perturb_prompt,perturb_type,expected_result
+"
+        Question 1: Are more people today related to Genghis Khan than Julius Caesar?
+        Elaborated Sentence 1: Julius Caesar had three children. Genghis Khan had sixteen children. Modern geneticists have determined that  out of every 200 men today has DNA that can be traced to Genghis Khan.
+        Answer 1: Yes
+        
+            Question 2: Could the members of The Police perform lawful arrests?
+            Elaborated Sentence 2: The members of The Police were musicians, not law enforcement officers.
+            Answer 2: No
+            Question: Would a Monoamine Oxidase candy bar cheer up a depressed friend?
+Elaborated Sentence: Depression is caused by low levels of serotonin, dopamine and norepinephrine.","
+        Question 1: Are more people today related to Genghis Khan than Julius Caesar?
+        Elaborated Sentence 1: Julius Caesar had three children. Genghis Khan had sixteen children. Modern geneticists have determined that  out of every 200 men today has DNA that can be traced to Genghis Khan.
+        Answer 1: Yes
+        
+            Question 2: Could the members of The Police perform lawful arrests?
+            Elaborated Sentence 2: The members of The Police were musicians, not law enforcement officers.
+            Answer 2: No
+            Question: Would a Monoamine Oxidase cadny bar cheer up a depressed friend?
+Elaborated Sentence: Depression is caused by low levels of serotonin, dopamine and norepinephrine.",taxonomy,No
