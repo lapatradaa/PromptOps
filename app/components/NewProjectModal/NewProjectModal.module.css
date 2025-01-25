@@ -24,6 +24,7 @@
         transform: translateY(-20px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -66,7 +67,8 @@
 
 .inputGroup label[for="projectName"],
 .inputGroup label[for="llm"],
-.inputGroup label[for="systemContent"] {
+.inputGroup label[for="systemContent"],
+.inputGroup label[for="type"] {
     font-weight: 600;
     margin-bottom: 10px;
 }
@@ -81,6 +83,11 @@
     color: #403B61;
     outline: none;
     font-family: inherit;
+    transition: border-color 0.2s ease;
+}
+
+.input:focus {
+    border-color: #BA5CDB;
 }
 
 .input::placeholder {
@@ -98,15 +105,70 @@
     outline: none;
     font-family: inherit;
     background-color: white;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.llmDropdown:focus {
+    border-color: #BA5CDB;
 }
 
 .placeholder {
     color: #9F9DB0;
 }
 
-.radioGroup {
+.radioGroupInline {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    gap: 180px;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.radioLabelInline {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    color: #797690;
+}
+
+.radioInputInline {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 2px solid #9F9DB0;
+    border-radius: 50%;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    position: relative;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    display: inline-block;
+    vertical-align: middle;
+    background-color: white;
+}
+
+.radioInputInline:checked {
+    border-color: #BA5CDB;
+}
+
+.radioInputInline:checked::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #BA5CDB;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0;
 }
 
 .radioWrapper {
@@ -116,39 +178,8 @@
 }
 
 .radioLabel {
-    margin: 0 15px;
-    padding: 0;
     color: #9F9DB0;
     font-weight: 400;
-}
-
-.radioInput {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #9F9DB0;
-    border-radius: 50%;
-    margin: 0;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.radioInput:checked {
-    border-color: #BA5CDB;
-}
-
-.radioInput:checked::after {
-    content: '';
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background: #BA5CDB;
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
 }
 
 .customInput {
@@ -164,6 +195,12 @@
     line-height: 22px;
     height: 38px;
     color: #403B61;
+    margin-left: 20px;
+}
+
+.customInput:focus:not(.disabled) {
+    border-color: #BA5CDB;
+    outline: none;
 }
 
 .customInput.disabled {
@@ -171,17 +208,6 @@
     color: #9F9DB0;
     cursor: not-allowed;
     border-color: #E5E5E5;
-}
-
-.customInput:not(.disabled):focus {
-    outline: none;
-}
-
-.inputGroup label[for="apiKey"] {
-    letter-spacing: 0.5px;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 10px;
 }
 
 .buttonGroup {
@@ -210,16 +236,23 @@
     color: #9F9DB0;
 }
 
+.cancelBtn:hover:not(:disabled) {
+    background: #F8F8F8;
+}
+
 .nxtBtn {
     background-color: #BA5CDB;
     border: none;
     color: white;
 }
 
-.cancelBtn:hover:not(:disabled) {
-    background: #F8F8F8;
-}
-
 .nxtBtn:hover:not(:disabled) {
     transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(186, 92, 219, 0.2);
+}
+
+.radioGroupColumn {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
 }
