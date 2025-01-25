@@ -5,20 +5,26 @@ const nextConfig = {
     MONGODB_URI: process.env.MONGODB_URI,
     JWT_SECRET: process.env.JWT_SECRET,
   },
-  
-  // Keep existing rewrites
+  // Updated rewrites configuration
   rewrites: async () => {
     return [
+      // Skip auth routes by only targeting specific API paths you want to forward to Flask
+      // Add your specific Flask API routes here
       {
-        source: '/api/:path*',
-        destination:
-          process.env.NODE_ENV === 'development'
-            ? 'http://127.0.0.1:5328/api/:path*'
-            : '/api/',
+        source: '/api/signin',
+        destination: 'http://127.0.0.1:5328/api/signin'
       },
+      {
+        source: '/api/signup',
+        destination: 'http://127.0.0.1:5328/api/signup'
+      },
+      {
+        source: '/api/verify',
+        destination: 'http://127.0.0.1:5328/api/verify'
+      }
+      // Add other specific Flask routes as needed
     ]
   },
-  
   // Keep existing webpack configuration
   webpack: (config, { dev }) => {
     if (dev) {
