@@ -1,0 +1,165 @@
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    background-color: white;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.headerLeft {
+    flex: 1;
+}
+
+.headerCenter {
+    flex: 2;
+    text-align: center;
+}
+
+.headerRight {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    align-items: center;
+}
+
+.backLinkContainer {
+    width: 32px;
+    height: 32px;
+}
+
+.backLink {
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.backIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    font-size: 2rem;
+    color: #9F9DB0;
+    transition: color 0.2s ease;
+}
+
+.backIcon:hover {
+    color: #4b5563;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    font-family: inherit;
+    color: #111827;
+    margin: 0;
+}
+
+.playButton,
+.pauseButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+/* Default states */
+.pauseButton svg {
+    fill: #9996AC;
+}
+
+.playButton svg {
+    fill: url(#buttonGradient);
+}
+
+/* States when playing */
+.pauseButton.active svg {
+    fill: url(#buttonGradient);
+}
+
+.playButton.active svg {
+    fill: #9996AC;
+}
+
+/* Loading state */
+.playButton.loading {
+    animation: pulse 1.5s infinite;
+}
+
+/* Debug counter styles */
+.debugCounter {
+    display: flex;
+    align-items: center;
+    background-color: #f3f4f6;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.debugCounter span {
+    font-weight: 500;
+    margin-left: 0.25rem;
+    color: #6366f1;
+}
+
+/* Error container styles */
+.errorContainer {
+    padding: 8px 16px;
+    background-color: #fee2e2;
+    border-radius: 4px;
+}
+
+.errorMessage {
+    color: #dc2626;
+    font-size: 14px;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+    .header {
+        padding: 8px 12px;
+    }
+
+    .title {
+        font-size: 1rem;
+    }
+
+    .playButton,
+    .pauseButton {
+        font-size: 2rem;
+    }
+
+    .debugCounter {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .errorContainer {
+        padding: 6px 12px;
+    }
+
+    .errorMessage {
+        font-size: 12px;
+    }
+}

@@ -1,86 +1,95 @@
-// app/project/[id]/page.tsx
+// /app/project/[id]/page.tsx
 "use client"
 
-import { RiStopCircleFill, RiPlayCircleFill, RiOrganizationChart } from "react-icons/ri";
-import { FaAngleLeft, FaBrain } from 'react-icons/fa';
-import { GrFormClose } from "react-icons/gr";
-import { MdStackedBarChart } from 'react-icons/md';
-import { FiSearch } from 'react-icons/fi';
-
-import { useCallback, useState } from 'react';
-import Link from 'next/link';
+import { useCallback, useEffect, useState, use } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { DndProvider, useDragLayer } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
-import ProjectBoard from '@/app/components/ProjectBoard/ProjectBoard';
-import TestSetup from '@/app/components/TestSetup/TestSetup';
-import styles from './project.module.css';
-import TestCase from "@/app/components/TestCase/TestCase";
-import LLMSetting from "@/app/components/LLMSetting/LLMSetting";
+// Components
+import Header from './components/Header';
+import ProjectBoard from './components/ProjectBoard';
+import SecondaryMenu from './components/SecondaryMenu';
+import DashboardPanel from './components/DashboardPanel';
+import LLMSetting from './components/LLMSetting/LLMSetting';
+import ScoreComparison from './components/ScoreComparison/ScoreComparison';
 
-type MenuType = 'options' | 'llm' | 'chart' | 'dashboard' | null;
+// Hooks
+import { useBlockUpdates } from './hooks/useBlockUpdates';
+import { useTestLLM } from './hooks/useTestLLM';
+import { useProject } from './hooks/useProject';
+
+// Types
+import { MenuType } from '@/app/types';
+import styles from './project.module.css';
+import { RiOrganizationChart } from 'react-icons/ri';
+import { FaBrain } from 'react-icons/fa';
+import { MdStackedBarChart } from 'react-icons/md';
 
 // DragLayerMonitor component
 const DragLayerMonitor = ({ onDragChange }: { onDragChange: (isDragging: boolean) => void }) => {
-    useDragLayer((monitor) => {
-        const isDragging = monitor.isDragging() && monitor.getItemType() === 'PLACED_BLOCK';
+    const isDragging = useDragLayer((monitor) =>
+        monitor.isDragging() && monitor.getItemType() === 'PLACED_BLOCK'
+    );
+
+    useEffect(() => {
         onDragChange(isDragging);
-        return { isDragging };
-    });
+    }, [isDragging, onDragChange]);
+
     return null;
 };
 
-// Main ProjectPage component
-const ProjectPage = () => {
+const ProjectPage = ({ params }: { params: Promise<{ id: string }> }) => {
+    const resolvedParams = use(params);
     const searchParams = useSearchParams();
+
+    // State declarations
     const [activeMenu, setActiveMenu] = useState<MenuType>(null);
-    const [activeTab, setActiveTab] = useState<string | null>('Setup');
-    const [openMenuItem, setOpenMenuItem] = useState<string | null>(null);
     const [isDraggingBlock, setIsDraggingBlock] = useState(false);
 
-    const projectName = decodeURIComponent(searchParams.get('name') || 'Untitled Project');
+    // Custom hooks
+    const { project, isLoading: projectLoading } = useProject(resolvedParams.id);
+    const {
+        blocks,
+        totalBlocks,
+        handleBlocksUpdate,
+        handleMoveBlock,
+        handleUpdateBlock,
+        handleRemoveBlock
+    } = useBlockUpdates([]);
 
-    const menuOptions = [
-        {
-            id: 'options' as MenuType,
-            icon: <RiOrganizationChart />,
-            className: styles.optionsMenu
-        },
-        {
-            id: 'llm' as MenuType,
-            icon: <FaBrain />,
-            className: styles.llmMenu
-        },
-        {
-            id: 'chart' as MenuType,
-            icon: <MdStackedBarChart />,
-            className: styles.chartMenu
-        }
-    ];
+    const {
+        isLoading,
+        isPlaying,
+        error,
+        testResults,
+        handleTest: handleTestLLM,
+        handleStop: handleStopTest,
+        clearResults
+    } = useTestLLM(blocks);
 
-    const handleMenuItemClick = (item: string) => {
-        setOpenMenuItem(openMenuItem === item ? null : item);
-    };
-
-    const handleMenuClick = (menuId: MenuType) => {
-        if (activeMenu === menuId) {
-            setActiveMenu(null);
-        } else {
-            setActiveMenu(menuId);
-        }
-    };
+    const handleMenuClick = useCallback((menuId: MenuType) => {
+        setActiveMenu(activeMenu === menuId ? null : menuId);
+    }, [activeMenu]);
 
     const handleDashboardClick = useCallback(() => {
         setActiveMenu('dashboard');
     }, []);
 
-    const renderContent = () => {
+    const handleDragChange = useCallback((isDragging: boolean) => {
+        setIsDraggingBlock(isDragging);
+    }, []);
+
+    const handlePlayClick = useCallback(async () => {
+        await handleTestLLM();
+    }, [handleTestLLM]);
+
+    const renderContent = useCallback(() => {
         switch (activeMenu) {
             case 'llm':
                 return <LLMSetting />;
             case 'chart':
-                return <div>Chart Content</div>;
+                return <ScoreComparison />;
             case 'dashboard':
             case 'options':
             case null:
@@ -88,66 +97,51 @@ const ProjectPage = () => {
                 return (
                     <div className={styles.contentWrapper}>
                         <div className={styles.boardContainer}>
-                            <ProjectBoard onDashboardClick={handleDashboardClick} />
+                            <ProjectBoard
+                                initialBlocks={blocks}
+                                onBlocksUpdate={handleBlocksUpdate}
+                                onDashboardClick={handleDashboardClick}
+                            />
                         </div>
-                        {activeMenu === 'dashboard' && (
-                            <div className={styles.dashboardSidebar}>
-                                <div className={styles.dashboardHeader}>
-                                    <h2>Visualize Dashboard</h2>
-                                    <button
-                                        className={styles.closeButton}
-                                        onClick={() => setActiveMenu(null)}
-                                    >
-                                        <GrFormClose />
-                                    </button>
-                                </div>
-                                <div className={styles.dashboardContent}>
-                                    
-                                </div>
-                            </div>
+                        {activeMenu === 'dashboard' && testResults && (
+                            <DashboardPanel
+                                results={testResults}
+                                onClose={() => setActiveMenu(null)}
+                            />
                         )}
                     </div>
                 );
         }
-    };
+    }, [activeMenu, blocks, handleBlocksUpdate, handleDashboardClick, testResults]);
+
+    // Early return for loading state
+    if (projectLoading) {
+        return <div>Loading...</div>;
+    }
+
+    if (!project) {
+        return <div>Project not found</div>;
+    }
+
+    const projectName = project.name || decodeURIComponent(searchParams.get('name') || 'Untitled Project');
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <DragLayerMonitor onDragChange={setIsDraggingBlock} />
+            <DragLayerMonitor onDragChange={handleDragChange} />
             <div className={styles.pageContainer}>
-                <svg width="0" height="0" style={{ position: 'absolute' }}>
-                    <defs>
-                        <linearGradient id="buttonGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#BA5CDB" />
-                            <stop offset="100%" stopColor="#42A7F1" />
-                        </linearGradient>
-                    </defs>
-                </svg>
-
-                <header className={styles.header}>
-                    <div className={styles.headerLeft}>
-                        <div className={styles.backLinkContainer}>
-                            <Link href="/overview" className={styles.backLink}>
-                                <span className={styles.backIcon}>
-                                    <FaAngleLeft />
-                                </span>
-                            </Link>
-                        </div>
-                    </div>
-                    <div className={styles.headerCenter}>
-                        <h1 className={styles.title}>{projectName}</h1>
-                    </div>
-                    <div className={styles.headerRight}>
-                        <span className={styles.pauseButton}>
-                            <RiStopCircleFill />
-                        </span>
-                        <span className={styles.playButton}>
-                            <RiPlayCircleFill />
-                        </span>
-                    </div>
-                </header>
+                {/* Header */}
+                <Header
+                    projectName={projectName}
+                    blocksCount={blocks.length}
+                    isPlaying={isPlaying}
+                    isLoading={isLoading}
+                    error={error}
+                    onPlay={handlePlayClick}
+                    onPause={handleStopTest}
+                />
 
                 <div className={styles.mainGrid}>
+                    {/* Menu options */}
                     <div className={styles.leftSidebar}>
                         {menuOptions.map((option) => (
                             <span
@@ -160,51 +154,18 @@ const ProjectPage = () => {
                         ))}
                     </div>
 
-                    <div className={`${styles.secondarySidebar} ${activeMenu === 'options' ? styles.show : ''}`}>
-                        <div className={styles.searchContainer}>
-                            <FiSearch />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                className={styles.searchInput}
-                            />
-                        </div>
+                    {/* Secondary sidebar */}
+                    {activeMenu === 'options' && (
+                        <SecondaryMenu
+                            activeTab="Setup"
+                            blocks={blocks}
+                            onBlocksUpdate={handleBlocksUpdate}
+                            isDraggingBlock={isDraggingBlock}
+                            projectType={project?.type ?? 'default'}
+                        />
+                    )}
 
-                        <div className={styles.tabContainer}>
-                            <div
-                                className={`${styles.tab} ${activeTab === 'Setup' ? styles.active : ''}`}
-                                onClick={() => setActiveTab(activeTab === 'Setup' ? null : 'Setup')}
-                            >
-                                Test Setup
-                            </div>
-                            <div
-                                className={`${styles.tab} ${activeTab === 'Test case' ? styles.active : ''}`}
-                                onClick={() => setActiveTab(activeTab === 'Test case' ? null : 'Test case')}
-                            >
-                                Prompt Test Case
-                            </div>
-                        </div>
-
-                        <div className={styles.menuList}>
-                            {/* <RemoveZone isDragging={isDraggingBlock} /> */}
-                            {activeTab === 'Setup' ? (
-                                <TestSetup
-                                    openMenuItem={openMenuItem}
-                                    handleMenuItemClick={handleMenuItemClick}
-                                    isDraggingBlock={isDraggingBlock}
-                                />
-                            ) : activeTab === 'Test case' ? (
-                                <>
-                                    <TestCase
-                                        openMenuItem={openMenuItem}
-                                        handleMenuItemClick={handleMenuItemClick}
-                                        isDraggingBlock={isDraggingBlock}
-                                    />
-                                </>
-                            ) : null}
-                        </div>
-                    </div>
-
+                    {/* Main content */}
                     <div className={styles.mainContent}>
                         {renderContent()}
                     </div>
@@ -213,5 +174,24 @@ const ProjectPage = () => {
         </DndProvider>
     );
 };
+
+// Menu options configuration
+const menuOptions = [
+    {
+        id: 'options' as MenuType,
+        icon: <RiOrganizationChart />,
+        className: styles.optionsMenu
+    },
+    {
+        id: 'llm' as MenuType,
+        icon: <FaBrain />,
+        className: styles.llmMenu
+    },
+    {
+        id: 'chart' as MenuType,
+        icon: <MdStackedBarChart />,
+        className: styles.chartMenu
+    }
+];
 
 export default ProjectPage;

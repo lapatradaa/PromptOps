@@ -1,0 +1,237 @@
+.container {
+    padding: 100px;
+    background-color: #f8f5fc;
+    border-radius: 10px;
+    width: 100%;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+}
+
+.categories {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.category {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.categoryTitle {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #6c648a;
+    margin-bottom: 0.5rem;
+}
+
+.modelRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.versionButton {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 15px 10px 15px 30px;
+    width: 230px;
+    border: 1px solid #9c9980;
+    border-radius: 20px;
+    background-color: white;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.versionButton:hover {
+    background-color: #e0d6f8;
+}
+
+.versionButton.selected {
+    outline: 2px solid #BA5CDB;
+    border-color: #BA5CDB;
+    color: #BA5CDB;
+    font-weight: 500;
+}
+
+.addButton {
+    padding: 0.5rem 1rem;
+    background-color: #a267e8;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.addButton:hover {
+    background-color: #8a4fc5;
+}
+
+.selectedSection {
+    margin-top: 5rem;
+    background-color: #fff;
+    border: #9c9980 1px solid;
+    border-radius: 100px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: row;
+    /* Horizontal layout */
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    height: 148px;
+    /* Fix the height of the section */
+    overflow: hidden;
+    /* Prevent section from expanding */
+}
+
+.selectedModels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    flex: 1;
+    /* Take up remaining space */
+    max-height: 100%;
+    /* Use the available height of the section */
+    overflow-y: auto;
+    /* Enable vertical scrolling when content exceeds */
+    padding-right: 1rem;
+    /* Add padding for scrollbar visibility */
+}
+
+.modelsContainer {
+    flex: 1;
+    /* Allows models to take up the available space */
+    height: 100%;
+    /* Match the height of the section */
+    overflow-y: auto;
+    /* Allow scrolling for overflow content */
+}
+
+.compareActions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: flex-end;
+    /* Keep buttons on the right */
+}
+
+.selectedModel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #fff;
+    padding: 1rem 2rem;
+    border-radius: 100px;
+    border: 1px solid #9c9980;
+}
+
+.selectedModel span {
+    color: #666281;
+    padding-right: 20px;
+}
+
+.removeButton {
+    color: #CFCCE3;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0; 
+    margin: 0; 
+    width: auto; 
+    height: auto;
+    line-height: 1;
+}
+
+.clearAllButton {
+    border: none;
+    background: none;
+    display: flex;
+    align-items: center;
+    padding-right: 10px;
+}
+
+.clearAllButton svg {
+    font-size: 26px;
+    cursor: pointer;
+}
+
+.selectedSection .compareContainer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+}
+
+.compareButton {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: bold;
+    background-color: #C87DE2;
+    border-radius: 100px;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.compareButton:disabled {
+    background-color: #d3c6f2;
+    cursor: not-allowed;
+}
+
+.dropdownContainer {
+    position: relative;
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 230px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.dropdownOption {
+    display: block;
+    width: 100%;
+    padding: 1rem 1rem;
+    background-color: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dropdownOption:hover {
+    background-color: #e8e1f7;
+}
+
+.dropdownOption:first-child {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.dropdownOption:last-child {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.subText {
+    display: block;
+    font-size: 0.85rem;
+    color: #6c648a;
+}
