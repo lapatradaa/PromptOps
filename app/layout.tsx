@@ -1,5 +1,6 @@
 import { Kanit } from 'next/font/google'
 import './globals.css'
+import Providers from './providers'
 
 // Initialize the font
 const kanit = Kanit({
@@ -23,7 +24,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={kanit.className}>{children}</body>
+      <body className={kanit.className}>
+        <Providers>
+          {children}
+        </Providers>
+      </body>
     </html>
-  )
+  );
 }
