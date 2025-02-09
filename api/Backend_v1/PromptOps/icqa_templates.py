@@ -1,6 +1,8 @@
+import logging
 import pandas as pd
 import pickle
-from PromptOps.perturb import Perturbation
+from .perturb import Perturbation
+
 
 class ICQATemplateFormatter:
     def __init__(self, filepath):
@@ -30,7 +32,8 @@ class ICQATemplateFormatter:
         try:
             with open(filepath, 'rb') as file:
                 data = pickle.load(file)
-            return pd.DataFrame(data)  # Convert the loaded data to a DataFrame if applicable
+            # Convert the loaded data to a DataFrame if applicable
+            return pd.DataFrame(data)
         except Exception as e:
             raise ValueError(f"Error loading pickle file: {e}")
 
@@ -38,6 +41,9 @@ class ICQATemplateFormatter:
         """
         Apply perturbation to the question based on the perturbation type.
         """
+
+        perturb_type = perturb_type.lower().strip()
+
         if perturb_type == 'robust':
             return question  # For robust, specific perturbations are expected from the data
         elif perturb_type == 'taxonomy':
@@ -45,7 +51,8 @@ class ICQATemplateFormatter:
         elif perturb_type == 'negation':
             return self.perturb.negation(question)
         elif perturb_type == 'coreference':
-            return self.perturb.coreference(question, 'word')  # Specify word to clarify
+            # Specify word to clarify
+            return self.perturb.coreference(question, 'word')
         elif perturb_type == 'srl':
             return self.perturb.srl(question)
         elif perturb_type == 'logic':
@@ -59,7 +66,8 @@ class ICQATemplateFormatter:
         elif perturb_type == 'vocab':
             return self.perturb.vocab(question)
         else:
-            raise ValueError("Invalid perturbation type")
+            logging.error(f"❌ Invalid perturbation type received: {perturb_type}")
+            raise ValueError(f"Invalid perturbation type: {perturb_type}")
 
     def format_zero_shot(self, row, perturb_type=None):
         """
@@ -168,11 +176,14 @@ class ICQATemplateFormatter:
 
         for _, row in self.df.iterrows():
             if shot_type == 'zero':
-                formatted_data.append(self.format_zero_shot(row, perturb_type=perturb_type))
+                formatted_data.append(self.format_zero_shot(
+                    row, perturb_type=perturb_type))
             elif shot_type == 'one':
-                formatted_data.append(self.format_one_shot(row, perturb_type=perturb_type))
+                formatted_data.append(self.format_one_shot(
+                    row, perturb_type=perturb_type))
             elif shot_type == 'few':
-                formatted_data.append(self.format_few_shot(row, perturb_type=perturb_type))
+                formatted_data.append(self.format_few_shot(
+                    row, perturb_type=perturb_type))
             else:
                 raise ValueError("Invalid shot type")
 

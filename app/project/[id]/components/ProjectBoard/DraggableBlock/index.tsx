@@ -3,6 +3,7 @@ import { useDrag } from 'react-dnd';
 
 import BlockContent from './BlockContent';
 import { Block, DropResult } from '@/app/types';
+
 import styles from './DraggableBlock.module.css';
 
 interface DraggableBlockProps {

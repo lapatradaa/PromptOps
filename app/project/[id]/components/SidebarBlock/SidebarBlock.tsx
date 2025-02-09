@@ -1,5 +1,5 @@
 import { RiBook2Fill, RiEyeFill, RiFlag2Fill, RiQuestionAnswerFill } from 'react-icons/ri';
-import { HiQuestionMarkCircle } from 'react-icons/hi'
+import { HiQuestionMarkCircle, HiSparkles } from 'react-icons/hi'
 import { GrDrag } from 'react-icons/gr';
 import { FaLightbulb, FaList } from 'react-icons/fa';
 import { MdDriveFolderUpload, MdQueue } from 'react-icons/md';
@@ -36,6 +36,7 @@ const SidebarBlock = ({
     const blockClassName = `
         ${styles.blockContainer}
         ${isDragging ? styles.dragging : ''}
+        ${type === 'preprocessing' ? styles.preprocessingContainer : ''}
         ${type === 'evaluation-container' ? styles.evaluationContainer : ''}
         ${type === 'topic' ? styles.topicContainer : ''}
         ${type === 'dashboard' ? styles.dashboardContainer : ''}
@@ -165,6 +166,7 @@ const SidebarBlock = ({
                     <div className={styles.draggableBlockLeft}>
                         {type === 'evaluation-container' && <FaList className={styles.evaluationIcon} />}
                         {type === 'output-container' && <MdDriveFolderUpload className={styles.outputIcon} />}
+                        {type === 'preprocessing' && <HiSparkles className={styles.preprocessingIcon} />}
                         {type === 'topic' && <FaLightbulb className={styles.blockIcon} />}
                         {type === 'input' && <MdDriveFolderUpload className={styles.blockIcon} />}
                         <span>{label}</span>
@@ -177,6 +179,10 @@ const SidebarBlock = ({
                     {(type === 'input') && (
                         <button className={styles.uploadButton}>+ Upload</button>
                     )}
+
+                    {(type === 'preprocessing' && (
+                        <button className={styles.processButton}>Process</button>
+                    ))}
                 </div>
             </>
         );

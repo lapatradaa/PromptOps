@@ -1,4 +1,4 @@
-from PromptOps.act_pas_helper import *
+from .act_pas_helper import *
 
 does = ['do', 'did', 'does']
 wh_q = ['when', 'where', 'how', 'why']

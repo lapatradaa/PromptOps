@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { MdDriveFolderUpload, MdFolder } from 'react-icons/md';
-import styles from './FileUpload.module.css';
+import styles from './FileUploadBlock.module.css';
 import { GrFormClose } from 'react-icons/gr';
 
 interface FileUploadProps {

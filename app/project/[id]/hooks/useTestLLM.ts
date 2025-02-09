@@ -1,126 +1,133 @@
 import { useState, useCallback } from 'react';
-import { Block } from '@/app/types';
+import { Block, TestCaseFormat, ShotType } from '@/app/types';
 import { TestResults } from '../components/DashboardPanel/types';
 
-interface TestConfig {
-    modelProvider: string;
-    model: string;
-    systemContent: string;
-    temperature: number;
-    topP: number;
-    maxTokens: number;
-    llamaUrl: string;
-}
-
-interface TestTemplate {
-    instruction: string;
-    context: string;
-    query: string;
-}
-
-const defaultConfig: TestConfig = {
-    modelProvider: "llama",
-    model: "llama-13b",
-    systemContent: "You are an assistant that generates logical sentences.",
-    temperature: 0.5,
-    topP: 0.9,
-    maxTokens: 150,
-    llamaUrl: "http://127.0.0.1:8000/v1/chat/completions"
-};
-
-const defaultTemplate: TestTemplate = {
-    instruction: "Answer the question based on the context below. Answer each question with a simple Boolean answer (Yes or No).",
-    context: "Seedless cucumber fruit does not require pollination. Cucumber plants need insects to pollinate them. Entomophobia is a fear of insects.",
-    query: "Is growing seedless cucumber good for a gardener with entomophobia?"
-};
-
-export const useTestLLM = (blocks: Block[]) => {
+export const useTestLLM = (blocks: Block[], projectId: string) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [testResults, setTestResults] = useState<TestResults | null>(null);
+
+    // Map your UI-based enums to the backend-friendly strings
+    const shotTypeMap: Record<ShotType, string> = {
+        'Zero Shot': 'zero',
+        'One Shot': 'one',
+        'Few Shot': 'few',
+    };
+
+    const templateMap: Record<TestCaseFormat, string> = {
+        'ICQA Format': 'icqa',
+        'Standard': 'std',
+        'Chain-of-Thought': 'cot',
+    };
 
     const handleTest = useCallback(async () => {
         try {
             setIsLoading(true);
             setError(null);
 
-            const testData = {
-                config: defaultConfig,
-                blocks: blocks.map(block => ({
-                    type: block.type,
-                    method: block.method || block.type,
-                    config: {
-                        data: block.config?.data,  // This will include the file content
-                        ...block.config
-                    }
-                })),
-                template: defaultTemplate
+            // 1) Gather topics from every block
+            const allTopics = blocks.flatMap(block => block.config?.topics || []);
+            const uniqueTopics = Array.from(new Set(allTopics));
+
+            // 2) Find the test-case block to read shotType & testCaseFormat
+            const testCaseBlock = blocks.find(b => b.type === 'test-case');
+            const shot_type = testCaseBlock?.shotType
+                ? shotTypeMap[testCaseBlock.shotType]
+                : 'zero'; // default fallback if missing
+            const template = testCaseBlock?.testCaseFormat
+                ? templateMap[testCaseBlock.testCaseFormat]
+                : 'std'; // default fallback if missing
+
+            // 3) Build the POST payload
+            //    This will be sent to your Next.js route, which calls `process-combined` in FastAPI
+
+            const endpoint = "process-combined";
+            const payload = {
+                endpoint,
+                shot_type,
+                template,
+                blocks,
+                topics: uniqueTopics, // <— pass all topics here
             };
 
-            console.log('Sending request to:', 'http://localhost:8001/api/test-llm');
-            const response = await fetch('http://localhost:8001/api/test-llm', {
+            // 4) Call the Next.js endpoint: /api/projects/[projectId]
+            //    In your route, you’ll forward to FastAPI /process-combined
+            const response = await fetch(`/api/projects/${projectId}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(testData),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Response not OK:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    errorText
-                });
-                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                const msg = await response.text();
+                throw new Error(`HTTP error! status: ${response.status}, message: ${msg}`);
             }
 
-            const results = await response.json();
+            // 5) This response should combine both normal & robust results
+            const rawResults = await response.json();
+            // rawResults might look like: 
+            // {
+            //   results: [...],
+            //   summary: {...},
+            //   index_scores: {...},
+            //   robust_results: [...]
+            // }
 
-            // Transform results if needed
-            const transformedResults = {
-                summary: results.summary || '',
-                tests: results.tests || [],
-                ...results
+            // 6) Now compute *all* scores
+            const scoreResponse = await fetch(`/api/projects/calculate-scores`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(rawResults),
+            });
+
+            if (!scoreResponse.ok) {
+                const msg = await scoreResponse.text();
+                throw new Error(`Failed to calculate scores: ${msg}`);
+            }
+
+            const scoreData = await scoreResponse.json();
+            // scoreData might look like:
+            // {
+            //   overall_score: {...},
+            //   performance_score: {...}
+            // }
+
+            console.log("overall_score: ", scoreData.overall_score)
+
+            // 7) Merge the score data with the original results
+            const finalResults: TestResults = {
+                ...rawResults,
+                overall_score: scoreData.overall_score,
+                performance_score: scoreData.performance_score,
             };
 
-            setTestResults(results);
+            setTestResults(finalResults);
             setIsPlaying(true);
-
         } catch (err) {
-            console.error('Test LLM error:', err);
+            console.error('❌ Test LLM error:', err);
             setError(err instanceof Error ? err.message : 'Failed to test LLM');
             setIsPlaying(false);
         } finally {
             setIsLoading(false);
         }
-    }, [blocks]);
+    }, [blocks, projectId]);
 
+    // Pausing / Stopping logic
     const handleStop = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:8001/api/stop-test', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
+            const response = await fetch('/api/projects/stop', { method: 'POST' });
             if (!response.ok) {
-                throw new Error('Failed to stop test');
+                throw new Error(`Failed to pause test: ${await response.text()}`);
             }
-
             setIsPlaying(false);
-            setIsLoading(false);
-            setError(null);
-
         } catch (err) {
-            console.error('Error stopping test:', err);
-            setError(err instanceof Error ? err.message : 'Failed to stop test');
+            console.error('❌ Error pausing test:', err);
+            setError(err instanceof Error ? err.message : 'Failed to pause test');
         }
     }, []);
 
+    // Clears state
     const clearResults = useCallback(() => {
         setTestResults(null);
         setError(null);
@@ -135,8 +142,6 @@ export const useTestLLM = (blocks: Block[]) => {
         testResults,
         handleTest,
         handleStop,
-        clearResults
+        clearResults,
     };
 };
-
-export type UseTestLLMReturn = ReturnType<typeof useTestLLM>;

@@ -3,24 +3,25 @@ import anthropic
 import google.generativeai as genai
 # from utils import set_openai_api_key, set_gemini_api_key
 from sentence_transformers import SentenceTransformer
-from .perturb import Perturbation  # Import your perturbation functions from perturb.py
+# Import your perturbation functions from perturb.py
+from .perturb import Perturbation
 import requests
 import spacy
-import numpy as np 
-# Initialize the sentence transformer model for similarity evaluation
+import numpy as np
 # Initialize the sentence transformer model for similarity evaluation
 similarity_model = SentenceTransformer("all-mpnet-base-v2")
-url = "http://127.0.0.1:8000/v1/chat/completions" 
+url = "http://127.0.0.1:8000/v1/chat/completions"
+
 
 def evaluate_response(text1, text2, model):
     """
     Evaluate the response using the SentenceTransformer model.
-    
+
     Parameters:
     text1 (str): The first text to compare.
     text2 (str): The second text to compare.
     model (SentenceTransformer): The model to use for generating embeddings.
-    
+
     Returns:
     float: The similarity score between the two texts.
     """
@@ -29,13 +30,14 @@ def evaluate_response(text1, text2, model):
     similarities = model.similarity(emb_a, emb_b)
     return similarities.item()
 
+
 class PromptCompletion:
-    def __init__(self, 
+    def __init__(self,
                  model_provider="openai",  # Can be 'openai', 'gemini', 'claude', or 'llama'
-                 model="gpt-3.5-turbo",     
+                 model="gpt-3.5-turbo",
                  system_content="""You will act as a Question Answering model.""",
-                 temperature=0, 
-                 top_p=0, 
+                 temperature=0,
+                 top_p=0,
                  max_tokens=100,
                  api_key=None,
                  stream=False,
@@ -69,17 +71,19 @@ class PromptCompletion:
             if api_key:
                 openai.api_key = self.api_key
             else:
-                raise ValueError("OpenAI API key is required.")  
+                raise ValueError("OpenAI API key is required.")
 
         elif self.model_provider == "claude":
             if not api_key:
                 raise ValueError("Claude API key is required.")
-            self.client = anthropic.Anthropic(api_key=api_key)  # Initialize the Claude client
+            self.client = anthropic.Anthropic(
+                api_key=api_key)  # Initialize the Claude client
 
         elif self.model_provider == "gemini":
             if not api_key:
                 raise ValueError("Gemini API key is required.")
-            genai.configure(api_key=api_key)  # Configure the Gemini API with the provided key
+            # Configure the Gemini API with the provided key
+            genai.configure(api_key=api_key)
 
             # # Configure generation settings for Gemini
             # self.generation_config = {
@@ -101,7 +105,7 @@ class PromptCompletion:
     def generate_completion(self, prompt, batch=False, chain_of_thought=False):
         """
         Generate a completion for a given prompt using the set model and provider.
-        
+
         Parameters:
         prompt (str): The input prompt for generating completion.
         batch (bool): Whether to send multiple prompts in a batch (for Claude).
@@ -207,13 +211,17 @@ class PromptCompletion:
 
             if response.status_code == 200:
                 # Extract the assistant's response content
-                assistant_response = response.json()['choices'][0]['message']['content']
+                assistant_response = response.json(
+                )['choices'][0]['message']['content']
                 return assistant_response
             else:
                 return (f"Failed with status code {response.status_code}: {response.text}")
 
         else:
-            raise ValueError(f"Model provider {self.model_provider} is not supported.")
+            raise ValueError(
+                f"Model provider {self.model_provider} is not supported.")
+
+
 class Test:
     def __init__(self, name, prompt, expected_result, description=None,
                  perturb_method=None, perturb_text=None, capability=None,
@@ -226,7 +234,7 @@ class Test:
         self.perturb_text = perturb_text
         self.capability = capability
         self.pass_condition = pass_condition
-        self.test_type = test_type  
+        self.test_type = test_type
         self.original_response = None
         self.perturb_response = None
         self.score_original = None
@@ -241,9 +249,11 @@ class Test:
         self.perturb_response = self.get_response(self.perturb_text)
 
         if self.original_response:
-            self.score_original = self.evaluate(similarity_model, self.original_response)
+            self.score_original = self.evaluate(
+                similarity_model, self.original_response)
         if self.perturb_response:
-            self.score_perturb = self.evaluate(similarity_model, self.perturb_response)
+            self.score_perturb = self.evaluate(
+                similarity_model, self.perturb_response)
 
     def get_response(self, text):
         if not text:
@@ -273,7 +283,7 @@ class Test:
         return {
             'name': self.name,
             'description': self.description,
-            'test_type': self.test_type,  
+            'test_type': self.test_type,
             'prompt': self.prompt,
             'expected_result': self.expected_result,
             'perturb_text': self.perturb_text,

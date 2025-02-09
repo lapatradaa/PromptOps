@@ -1,68 +1,108 @@
+import React, { useEffect, useState } from "react";
 import { GrFormClose } from "react-icons/gr";
-import styles from './DashboardPanel.module.css';
+import { HiOutlineTrendingUp, HiOutlineTrendingDown } from "react-icons/hi";
+import styles from "./DashboardPanel.module.css";
 import { DashboardPanelProps } from "./types";
+import CircleChart from "./components/CircleChart";
+import BarChart from "./components/BarChart";
 
 const DashboardPanel = ({ results, onClose }: DashboardPanelProps) => {
+  const [overallScore, setOverallScore] = useState(results?.overall_score || null);
+  const [performanceScore, setPerformanceScore] = useState(results?.performance_score || null);
+  const [dummy, setDummy] = useState(0); // Dummy state for forcing re-render
+
+  useEffect(() => {
+    setOverallScore(results?.overall_score || null);
+    setPerformanceScore(results?.performance_score || null);
+    setDummy((dummy) => dummy + 1);
+  }, [results]);
+
+  // Extract perturbation keys (excluding the overall score if necessary)
+  const perturbationKeys =
+    performanceScore && typeof performanceScore === "object"
+      ? Object.keys(performanceScore).filter(key => key !== "overall_performance_score")
+      : [];
+
   return (
     <div className={styles.dashboardSidebar}>
       <div className={styles.dashboardHeader}>
-        <h2>Test Results</h2>
-        <button
-          className={styles.closeButton}
-          onClick={onClose}
-          aria-label="Close dashboard"
-        >
+        <h2>Visualize Dashboard</h2>
+        <button className={styles.closeButton} onClick={onClose}>
           <GrFormClose />
         </button>
       </div>
+
       <div className={styles.dashboardContent}>
-        {results ? (
-          <div className={styles.resultContainer}>
-            {/* Statistics from summary */}
-            <div className={styles.summarySection}>
-              <h3>Statistics</h3>
-              <div className={styles.statsGrid}>
-                <div className={styles.statItem}>
-                  <label>Total Tests:</label>
-                  <span>{results.summary.total_tests}</span>
-                </div>
-                <div className={styles.statItem}>
-                  <label>Failures:</label>
-                  <span>{results.summary.failures}</span>
-                </div>
-                <div className={styles.statItem}>
-                  <label>Fail Rate:</label>
-                  <span>{(results.summary.fail_rate * 100).toFixed(1)}%</span>
-                </div>
+        <div className={styles.resultContainer}>
+          {overallScore && performanceScore ? (
+            <>
+              <div className={styles.scoreSection}>
+                <h2>Score</h2>
+                <CircleChart overallScore={overallScore} />
               </div>
-            </div>
 
-            {/* Tests section */}
-            {results.tests && results.tests.length > 0 && (
-              <div className={styles.testsSection}>
-                <h3>Tests</h3>
-                <div className={styles.testsList}>
-                  {results.tests.map((test, index) => (
-                    <div key={index} className={styles.testItem}>
-                      <pre>{JSON.stringify(test, null, 2)}</pre>
+              <div className={styles.beforePerturbSection}>
+                <h2>Before Perturbation</h2>
+                <BarChart performanceScore={performanceScore.overall_performance_score} barColor="#CCA3DA" fontColor="#9F19CC" />
+              </div>
+
+              <div className={styles.afterPerturbationContainer}>
+                <h2 className={styles.afterPerturbHeader}>
+                  After Perturbation
+                </h2>
+                {perturbationKeys.map(key => {
+                  let displayKey = key;
+                  let currentScore = performanceScore[key];
+
+                  // If key is "robust" or "vocab", adjust the display name and score normalization
+                  if (key.toLowerCase().includes("robust")) {
+                    displayKey = "Robustness";
+                    currentScore = performanceScore[key] / 100;
+                  } else if (key.toLowerCase().includes("vocab")) {
+                    displayKey = "Vocabulary";
+                  }
+
+                  if (
+                    (displayKey === "Robustness") &&
+                    (!currentScore || currentScore === 0)
+                  ) {
+                    return null;
+                  }
+
+                  // Determine if the current key has an "up" or "down" trend
+                  const isUp = performanceScore[key] > performanceScore.overall_performance_score;
+                  // Choose the color based on the trend
+                  const trendColor = isUp ? "#45AA13" : "#BD3131";
+
+                  return (
+                    <div key={key} className={styles.afterPerturbSection}>
+                      <p style={{ color: trendColor }}>
+                        <span className={styles.trendIcon}>
+                          {isUp ? (
+                            <HiOutlineTrendingUp color={trendColor} />
+                          ) : (
+                            <HiOutlineTrendingDown color={trendColor} />
+                          )}
+                        </span>
+                        {displayKey}
+                      </p>
+                      <BarChart
+                        performanceScore={currentScore}
+                        barColor="#9DC4E1"
+                        fontColor="#2196F3"
+                      />
                     </div>
-                  ))}
-                </div>
+                  );
+                }).filter((item) => item !== null)}
               </div>
-            )}
-
-            {/* Raw results */}
-            <div className={styles.rawResults}>
-              <h3>Raw Response</h3>
-              <pre>{JSON.stringify(results, null, 2)}</pre>
+            </>
+          ) : (
+            <div className={styles.noResults}>
+              <p>No test results available yet.</p>
+              <p>Run a test to see the results here.</p>
             </div>
-          </div>
-        ) : (
-          <div className={styles.noResults}>
-            <p>No test results available yet.</p>
-            <p>Run a test to see the results here.</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

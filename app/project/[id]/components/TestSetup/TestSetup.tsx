@@ -2,9 +2,10 @@ import React from 'react';
 import { useDrop } from 'react-dnd';
 import { FaTrashAlt } from 'react-icons/fa';
 
-import styles from './TestSetup.module.css';
 import { TopicType } from '@/app/types';
 import SidebarBlock from '@/app/project/[id]/components/SidebarBlock/SidebarBlock';
+
+import styles from './TestSetup.module.css';
 
 interface TestSetupProps {
   openMenuItem: string | null;
@@ -101,12 +102,22 @@ const TestSetup: React.FC<TestSetupProps> = ({
 }) => {
   const filteredTopics = TOPIC_MAPPING[projectType] || TOPIC_MAPPING.default;
 
-  console.log("Project Type:", projectType);
-  console.log("Filtered Topics:", filteredTopics);
-
   return (
     <div className={styles.menuList}>
       <RemoveZone isDragging={isDraggingBlock} />
+
+      {/* Preprocessing Section */}
+      <MenuSection
+        isOpen={openMenuItem === 'preprocessing'}
+        title="Preprocessing"
+        onClick={() => handleMenuItemClick('preprocessing')}
+      >
+        <SidebarBlock
+          type="preprocessing"
+          label="Preprocessing"
+          isContainer={false}
+        />
+      </MenuSection>
 
       {/* Input Files Section */}
       <MenuSection

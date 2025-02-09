@@ -22,7 +22,6 @@ const nextConfig = {
         source: '/api/verify',
         destination: 'http://127.0.0.1:5328/api/verify'
       }
-      // Add other specific Flask routes as needed
     ]
   },
   // Keep existing webpack configuration

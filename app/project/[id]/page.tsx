@@ -64,9 +64,9 @@ const ProjectPage = ({ params }: { params: Promise<{ id: string }> }) => {
         error,
         testResults,
         handleTest: handleTestLLM,
-        handleStop: handleStopTest,
+        handleStop: handleStop,
         clearResults
-    } = useTestLLM(blocks);
+    } = useTestLLM(blocks, resolvedParams.id);
 
     const handleMenuClick = useCallback((menuId: MenuType) => {
         setActiveMenu(activeMenu === menuId ? null : menuId);
@@ -137,7 +137,7 @@ const ProjectPage = ({ params }: { params: Promise<{ id: string }> }) => {
                     isLoading={isLoading}
                     error={error}
                     onPlay={handlePlayClick}
-                    onPause={handleStopTest}
+                    onPause={handleStop}
                 />
 
                 <div className={styles.mainGrid}>

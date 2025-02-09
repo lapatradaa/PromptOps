@@ -1,6 +1,8 @@
 import pandas as pd
 import pickle
-from PromptOps.perturb import Perturbation
+from .perturb import Perturbation
+
+
 class ShotTemplateFormatter:
     def __init__(self, filepath):
         self.filepath = filepath
@@ -21,7 +23,7 @@ class ShotTemplateFormatter:
             return self.load_pickle_file(self.filepath)
         else:
             raise ValueError("Unsupported file format")
-    
+
     def load_pickle_file(self, filepath):
         """
         Load a dataset from a pickle file.
@@ -29,9 +31,11 @@ class ShotTemplateFormatter:
         try:
             with open(filepath, 'rb') as file:
                 data = pickle.load(file)
-            return pd.DataFrame(data)  # Convert the loaded data to a DataFrame if applicable
+            # Convert the loaded data to a DataFrame if applicable
+            return pd.DataFrame(data)
         except Exception as e:
             raise ValueError(f"Error loading pickle file: {e}")
+
     def perturb_question(self, question, perturb_type):
         """
         Apply perturbation to the question based on the perturbation type.
@@ -41,7 +45,8 @@ class ShotTemplateFormatter:
         elif perturb_type == 'negation':
             return self.perturb.negation(question)
         elif perturb_type == 'coreference':
-            return self.perturb.coreference(question, 'word')  # Specify word to clarify
+            # Specify word to clarify
+            return self.perturb.coreference(question, 'word')
         elif perturb_type == 'srl':
             return self.perturb.srl(question)
         elif perturb_type == 'logic':
@@ -118,7 +123,6 @@ class ShotTemplateFormatter:
         """
         Format few-shot template with optional perturbation for the main question.
         """
-        
 
         if perturb_type == 'robust':
             question = row['Perturbed_Question']
@@ -164,11 +168,14 @@ class ShotTemplateFormatter:
 
         for _, row in self.df.iterrows():
             if shot_type == 'zero':
-                formatted_data.append(self.format_zero_shot(row, perturb_type=perturb_type))
+                formatted_data.append(self.format_zero_shot(
+                    row, perturb_type=perturb_type))
             elif shot_type == 'one':
-                formatted_data.append(self.format_one_shot(row, perturb_type=perturb_type))
+                formatted_data.append(self.format_one_shot(
+                    row, perturb_type=perturb_type))
             elif shot_type == 'few':
-                formatted_data.append(self.format_few_shot(row, perturb_type=perturb_type))
+                formatted_data.append(self.format_few_shot(
+                    row, perturb_type=perturb_type))
             else:
                 raise ValueError("Invalid shot type")
 

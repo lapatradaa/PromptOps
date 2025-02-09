@@ -16,6 +16,7 @@ export type BlockType =
     | 'dashboard'
     | 'output-container'
     | 'test-case'
+    | 'preprocessing'
     | 'metric';
 
 export type TopicType =
@@ -45,22 +46,19 @@ export interface BlockProps {
     testCaseFormat?: TestCaseFormat;
     shotType?: ShotType;
     method?: string;
-    config?: {
-        topics?: TopicType[];
-    };
+    config?: BlockConfig;
     onMetricSelect?: (metric: TopicType) => void;
     onMetricRemove?: (metric: TopicType) => void;
     onRemoveTopic?: (topic: TopicType) => void;
 }
 
-// Add a TestBlockProps interface to extend BlockProps with API-specific fields
-export interface TestBlockProps extends BlockProps {
-    method?: string;
-    config?: Record<string, any>;
+interface BlockConfig {
+    topics?: TopicType[];
+    data?: string;        // CSV text or base64 for XLSX
+    fileName?: string;    // store the real file name
 }
 
-// Update Block interface to extend TestBlockProps
-export interface Block extends TestBlockProps {
+export interface Block extends BlockProps {
     id: string;
     position: Position;
 }

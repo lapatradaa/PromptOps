@@ -12,12 +12,6 @@ export const useBlockUpdates = (initialBlocks: Block[] = []) => {
             config: block.config || {}
         }));
 
-        // console.log('Blocks updated:', {
-        //     connected: apiBlocks.length,
-        //     total: newTotalBlocks,
-        //     blocks: apiBlocks
-        // });
-
         setBlocks(apiBlocks);
         setTotalBlocks(newTotalBlocks);
     }, []);
@@ -83,9 +77,9 @@ export const useBlockUpdates = (initialBlocks: Block[] = []) => {
         setTotalBlocks(0);
     }, []);
 
-    const getConnectedBlocks = useCallback(() => {
-        return blocks.filter(block => block.config?.isConnected);
-    }, [blocks]);
+    // const getConnectedBlocks = useCallback(() => {
+    //     return blocks.filter(block => block.config?.isConnected);
+    // }, [blocks]);
 
     return {
         blocks,
@@ -97,7 +91,7 @@ export const useBlockUpdates = (initialBlocks: Block[] = []) => {
         handleRemoveTopic,
         handleMoveBlock,
         handleClearBlocks,
-        getConnectedBlocks
+        // getConnectedBlocks
     };
 };
 

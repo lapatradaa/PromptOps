@@ -31,7 +31,8 @@
     font-weight: 400;
 }
 
-.uploadButton {
+.uploadButton,
+.processButton {
     width: 100%;
     background-color: #C87DE2;
     color: white;
@@ -42,10 +43,6 @@
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s ease;
-}
-
-.uploadButton:hover {
-    background-color: #a94bc4;
 }
 
 .dragging {
@@ -180,6 +177,12 @@
 .outputContainer .outputIcon {
     font-size: 24px;
     color: #42A7F1;
+}
+
+/* Preprocessing container */
+.preprocessingContainer .preprocessingIcon {
+    font-size: 24px;
+    color: #BA5CDB;
 }
 
 /* Test Case block */

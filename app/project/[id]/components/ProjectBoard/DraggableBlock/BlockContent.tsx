@@ -1,14 +1,15 @@
 import React from 'react';
-import { Block, TopicType } from '@/app/types';
+import { Block, ShotType, TestCaseFormat, TopicType } from '@/app/types';
 import TopicList from '@/app/project/[id]/components/TopicList/TopicList';
 import TestCaseFields from './TestCaseFields';
-import FileUpload from './FileUpload';
+import FileUploadBlock from './FileUploadBlock';
 import styles from './BlockContent.module.css';
 import { FaLightbulb } from 'react-icons/fa';
 import { MdDriveFolderUpload } from 'react-icons/md';
 import { RiEyeFill } from 'react-icons/ri';
 import { GrDrag } from 'react-icons/gr';
 import { TiThLarge } from 'react-icons/ti';
+// import PreprocessingBlock from './PreprocessingBlock';
 
 interface BlockContentProps {
   block: Block;
@@ -19,7 +20,8 @@ const BlockContent: React.FC<BlockContentProps> = ({
   block,
   onUpdateBlock
 }) => {
-  // Handle TopicList rendering
+
+  // 1) Handle TopicList rendering
   if (block.type === 'evaluation-container' && block.method === 'topic-list') {
     return (
       <TopicList
@@ -40,7 +42,7 @@ const BlockContent: React.FC<BlockContentProps> = ({
     );
   }
 
-  // Handle Dashboard rendering
+  // 2) Handle Dashboard rendering
   if (block.type === 'dashboard') {
     return (
       <>
@@ -56,8 +58,18 @@ const BlockContent: React.FC<BlockContentProps> = ({
     );
   }
 
-  // Handle Test Case rendering
+  // 3) Handle Test Case rendering
   if (block.type === 'test-case') {
+    React.useEffect(() => {
+      if (!block.shotType || !block.testCaseFormat) {
+        onUpdateBlock?.(block.id, {
+          ...block,
+          shotType: block.shotType,
+          testCaseFormat: block.testCaseFormat
+        });
+      }
+    }, [block, onUpdateBlock]);
+
     return (
       <>
         <div className={styles.blockHeader}>
@@ -76,16 +88,18 @@ const BlockContent: React.FC<BlockContentProps> = ({
           </div>
         </div>
         <div className={styles.blockMain}>
-          <TestCaseFields format={block.testCaseFormat} />
+          <TestCaseFields
+            format={block.testCaseFormat}
+          />
         </div>
       </>
     );
   }
 
-  // Handle Input block with file upload
+  // 4) Handle Input block with file upload
   if (block.type === 'input') {
     return (
-      <FileUpload
+      <FileUploadBlock
         fileName={block.config?.fileName}
         fileType={block.label?.toLowerCase() as 'csv' | 'xlsx'}
         onFileSelect={async (file) => {
@@ -103,22 +117,22 @@ const BlockContent: React.FC<BlockContentProps> = ({
                   fileName: file.name
                 }
               });
-            } else if (block.label?.toLowerCase() === 'xlsx') {
-              const content = await file.arrayBuffer();
-              const base64 = btoa(
-                new Uint8Array(content)
-                  .reduce((data, byte) => data + String.fromCharCode(byte), '')
-              );
-              onUpdateBlock(block.id, {
-                ...block,
-                method: 'xlsx',
-                config: {
-                  ...block.config,
-                  data: base64,
-                  fileName: file.name
-                }
-              });
-            }
+            } 
+            // else if (block.label?.toLowerCase() === 'xlsx') {
+            //   const content = await file.arrayBuffer();
+            //   const base64 = btoa(
+            //     new Uint8Array(content).reduce((data, byte) => data + String.fromCharCode(byte), '')
+            //   );
+            //   onUpdateBlock(block.id, {
+            //     ...block,
+            //     method: 'xlsx',
+            //     config: {
+            //       ...block.config,
+            //       data: base64,
+            //       fileName: file.name
+            //     }
+            //   });
+            // }
           } catch (error) {
             console.error('Error reading file:', error);
           }
@@ -139,7 +153,18 @@ const BlockContent: React.FC<BlockContentProps> = ({
     );
   }
 
-  // Default block rendering
+  // 5) Handle Preprocessing rendering
+  // if (block.type === 'preprocessing') {
+  //   console.log("FileData: ", block.config?.data)
+  //   return (
+  //     <PreprocessingBlock
+  //       fileData={block.config?.data}
+  //       fileType={block.label?.toLowerCase()}
+  //     />
+  //   );
+  // }
+
+  // 6) Default block rendering
   return (
     <>
       <div className={styles.blockHeader}>

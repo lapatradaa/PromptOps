@@ -4,7 +4,7 @@ import { useDrop } from 'react-dnd';
 import { FaTrashAlt } from 'react-icons/fa';
 
 import styles from './TestCase.module.css';
-import DraggableBlock from "@/app/project/[id]/components/SidebarBlock/SidebarBlock";
+import SideBarBlock from "@/app/project/[id]/components/SidebarBlock/SidebarBlock";
 
 interface TestCaseProps {
     openMenuItem: string | null;
@@ -51,7 +51,7 @@ const TestCase: React.FC<TestCaseProps> = ({
                 </div>
                 {openMenuItem === 'icqa' && (
                     <div className={styles.dropdownContent}>
-                        <DraggableBlock 
+                        <SideBarBlock 
                             type='test-case'
                             testCaseFormat='ICQA Format'
                             shotType='Zero Shot'
@@ -60,7 +60,7 @@ const TestCase: React.FC<TestCaseProps> = ({
                 )}
                 {openMenuItem === 'icqa' && (
                     <div className={styles.dropdownContent}>
-                        <DraggableBlock 
+                        <SideBarBlock 
                             type='test-case'
                             testCaseFormat='ICQA Format'
                             shotType='One Shot'
@@ -69,7 +69,7 @@ const TestCase: React.FC<TestCaseProps> = ({
                 )}
                 {openMenuItem === 'icqa' && (
                     <div className={styles.dropdownContent}>
-                        <DraggableBlock 
+                        <SideBarBlock 
                             type='test-case'
                             testCaseFormat='ICQA Format'
                             shotType='Few Shot'
@@ -85,7 +85,7 @@ const TestCase: React.FC<TestCaseProps> = ({
                 </div>
                 {openMenuItem === 'std' && (
                     <div className={styles.dropdownContent}>
-                        <DraggableBlock 
+                        <SideBarBlock 
                             type='test-case'
                             testCaseFormat='Standard'
                             shotType='Zero Shot'
@@ -94,7 +94,7 @@ const TestCase: React.FC<TestCaseProps> = ({
                 )}
                 {openMenuItem === 'std' && (
                     <div className={styles.dropdownContent}>
-                        <DraggableBlock 
+                        <SideBarBlock 
                             type='test-case'
                             testCaseFormat='Standard'
                             shotType='One Shot'
@@ -103,7 +103,7 @@ const TestCase: React.FC<TestCaseProps> = ({
                 )}
                 {openMenuItem === 'std' && (
                     <div className={styles.dropdownContent}>
-                        <DraggableBlock 
+                        <SideBarBlock 
                             type='test-case'
                             testCaseFormat='Standard'
                             shotType='Few Shot'
@@ -119,7 +119,7 @@ const TestCase: React.FC<TestCaseProps> = ({
                 </div>
                 {openMenuItem === 'cot' && (
                     <div className={styles.dropdownContent}>
-                        <DraggableBlock 
+                        <SideBarBlock 
                             type='test-case'
                             testCaseFormat='Chain-of-Thought'
                             shotType='Zero Shot'
@@ -128,7 +128,7 @@ const TestCase: React.FC<TestCaseProps> = ({
                 )}
                 {openMenuItem === 'cot' && (
                     <div className={styles.dropdownContent}>
-                        <DraggableBlock 
+                        <SideBarBlock 
                             type='test-case'
                             testCaseFormat='Chain-of-Thought'
                             shotType='One Shot'
@@ -137,7 +137,7 @@ const TestCase: React.FC<TestCaseProps> = ({
                 )}
                 {openMenuItem === 'cot' && (
                     <div className={styles.dropdownContent}>
-                        <DraggableBlock 
+                        <SideBarBlock 
                             type='test-case'
                             testCaseFormat='Chain-of-Thought'
                             shotType='Few Shot'
