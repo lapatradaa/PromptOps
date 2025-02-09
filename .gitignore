@@ -40,8 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-__pycache__
 
 *storybook.log
 .storybook/
 stories/
+
+# Ignore all __pycache__ directories
+**/__pycache__/
