@@ -1,0 +1,367 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: white;
+    padding: 80px;
+    border-radius: 50px;
+    width: 800px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 30px;
+}
+
+.crumb {
+    color: #9F9DB0;
+    font-size: 20px;
+}
+
+.activeCrumb {
+    color: #403B61;
+    font-weight: 600;
+    font-size: 20px;
+}
+
+.chevron {
+    width: 20px;
+    height: 20px;
+    color: #9F9DB0;
+}
+
+.inputGroup {
+    margin: 20px 0;
+}
+
+.inputGroup label[for] {
+    display: block;
+    color: #797690;
+    letter-spacing: 0.5px;
+}
+
+.inputGroup label[for="projectName"],
+.inputGroup label[for="llm"],
+.inputGroup label[for="systemPrompt"],
+.inputGroup label[for="type"],
+.inputGroup label[for="apiKey"],
+.inputGroup label[for="url"],
+.inputGroup label[for="customModelName"] {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.input {
+    width: 100%;
+    padding: 8px 20px;
+    margin-bottom: 20px;
+    border: 1px solid #9F9DB0;
+    border-radius: 100px;
+    font-size: 16px;
+    color: #403B61;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+}
+
+.input:focus {
+    border-color: #BA5CDB;
+}
+
+.input::placeholder {
+    color: #9F9DB0;
+}
+
+.llmDropdown {
+    width: 100%;
+    padding: 8px 15px;
+    margin-bottom: 20px;
+    border: 1px solid #9F9DB0;
+    border-radius: 100px;
+    font-size: 16px;
+    color: #403B61;
+    outline: none;
+    font-family: inherit;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.llmDropdown:focus {
+    border-color: #BA5CDB;
+}
+
+.placeholder {
+    color: #9F9DB0;
+}
+
+.radioGroupInline {
+    display: flex;
+    flex-direction: row;
+    gap: 180px;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.radioLabelInline {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    color: #797690;
+}
+
+.radioInputInline {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 2px solid #9F9DB0;
+    border-radius: 50%;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    position: relative;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    display: inline-block;
+    vertical-align: middle;
+    background-color: white;
+}
+
+.radioInputInline:checked {
+    border-color: #BA5CDB;
+}
+
+.radioInputInline:checked::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #BA5CDB;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0;
+}
+
+.radioWrapper {
+    display: flex;
+    align-items: center;
+    padding-bottom: 15px;
+}
+
+.radioLabel {
+    color: #9F9DB0;
+    font-weight: 400;
+}
+
+.customInput {
+    width: 100%;
+    padding: 8px 20px;
+    border: 1px solid #9F9DB0;
+    border-radius: 100px;
+    font-size: 16px;
+    font-family: inherit;
+    resize: none;
+    transition: all 0.2s ease;
+    background-color: white;
+    line-height: 22px;
+    height: 38px;
+    color: #403B61;
+    margin-left: 20px;
+}
+
+.customInput:focus:not(.disabled) {
+    border-color: #BA5CDB;
+    outline: none;
+}
+
+.customInput.disabled {
+    background-color: #F5F5F5;
+    color: #9F9DB0;
+    cursor: not-allowed;
+    border-color: #E5E5E5;
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 40px;
+}
+
+.buttonGroup button {
+    padding: 12px 35px;
+    border-radius: 100px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.buttonGroup button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.cancelBtn {
+    background: none;
+    border: 1px solid #E5E5E5;
+    color: #9F9DB0;
+}
+
+.cancelBtn:hover:not(:disabled) {
+    background: #F8F8F8;
+}
+
+.nxtBtn {
+    background-color: #BA5CDB;
+    border: none;
+    color: white;
+}
+
+.nxtBtn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(186, 92, 219, 0.2);
+}
+
+.radioGroupColumn {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+}
+
+.passwordContainer {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+.passwordContainer input {
+    width: 100%;
+    padding-right: 40px;
+    /* Space for eye icon */
+}
+
+.eyeIcon {
+    position: absolute;
+    right: 10px;
+    top: 9px;
+    /* transform: translateY(50%); */
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    /* align-items: center; */
+    justify-content: center;
+}
+
+.eyeIcon svg {
+    width: 20px;
+    height: 20px;
+    transition: opacity 0.3s;
+    color: #666;
+}
+
+.eyeIcon:hover svg {
+    opacity: 0.7;
+    color: #333;
+}
+
+@media (max-width: 1440px) {
+    .modal {
+        padding: 60px;
+        width: 670px;
+        border-radius: 45px;
+    }
+
+    .breadcrumb {
+        gap: 6px;
+        margin-bottom: 25px;
+    }
+
+    .crumb,
+    .activeCrumb {
+        font-size: 18px;
+    }
+
+    .chevron {
+        width: 18px;
+        height: 18px;
+    }
+
+    .inputGroup {
+        margin: 18px 0;
+    }
+
+    .input,
+    .llmDropdown,
+    .customInput {
+        padding: 7px 18px;
+        font-size: 13px;
+    }
+
+    .radioLabel {
+        font-size: 13px;
+    }
+
+    .radioGroupInline {
+        gap: 150px;
+    }
+
+    .radioLabelInline {
+        font-size: 13px;
+    }
+
+    .radioInputInline {
+        width: 18px;
+        height: 18px;
+    }
+
+    .radioInputInline:checked::after {
+        width: 8px;
+        height: 8px;
+    }
+
+    .buttonGroup {
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .buttonGroup button {
+        padding: 10px 30px;
+        font-size: 13px;
+    }
+}

@@ -1,0 +1,62 @@
+/* @/app/project/[id]/components/ProjectBoard/components/FileUploadStatusIndicator/FileUploadStatusIndicator.module.css */
+.statusIndicator {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-top: 8px;
+    transition: all 0.2s ease;
+    max-width: 300px;
+}
+
+.icon {
+    margin-right: 8px;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.complete {
+    background-color: rgba(209, 250, 229, 0.8);
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.complete .icon {
+    color: #10b981;
+}
+
+.incomplete {
+    background-color: rgba(254, 243, 199, 0.8);
+    color: #92400e;
+    border: 1px solid #f59e0b;
+}
+
+.incomplete .icon {
+    color: #f59e0b;
+}
+
+.warning {
+    background-color: rgba(224, 231, 255, 0.8);
+    color: #3730a3;
+    border: 1px solid #6366f1;
+}
+
+.warning .icon {
+    color: #6366f1;
+}
+
+/* Addition to BlockValidationChecker to show file upload status */
+.fileUploadStatus {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.fileUploadStatus.missingFile {
+    color: #ef4444;
+}
+
+.fileIcon {
+    margin-right: 6px;
+}

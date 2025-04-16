@@ -63,15 +63,16 @@
   border-radius: 30px;
 }
 
-.switch input:checked + .slider {
+.switch input:checked+.slider {
   background-color: white;
 }
 
-.switch input:checked + .slider:before {
+.switch input:checked+.slider:before {
   transform: translateX(91px);
 }
 
-.signIn, .signUp {
+.signIn,
+.signUp {
   position: absolute;
   color: white;
   transition: color 0.2s;
@@ -86,8 +87,8 @@
   right: 20px;
 }
 
-.switch input:checked + .slider .signIn,
-.switch input:not(:checked) + .slider .signUp {
+.switch input:checked+.slider .signIn,
+.switch input:not(:checked)+.slider .signUp {
   color: #403B61;
 }
 
@@ -127,6 +128,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -158,7 +160,46 @@
   outline: none;
 }
 
-/* New styles for password fields */
+.passwordContainer {
+  display: flex;
+  align-items: center;
+  position: relative;
+  /* Ensure child elements position correctly */
+  width: 100%;
+}
+
+.passwordContainer input {
+  width: 100%;
+  padding-right: 40px;
+  /* Space for eye icon */
+}
+
+.eyeIcon {
+  position: absolute;
+  /* Fix it inside the password field */
+  right: 5px;
+  top: 0px;
+  /* Position inside the input field */
+  background: none !important;
+  border: none;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+}
+
+.eyeIcon svg {
+  width: 22px;
+  height: 22px;
+  transition: opacity 0.3s;
+  color: #403B61;
+
+}
+
+.eyeIcon:hover {
+  opacity: 0.7;
+}
+
+/* Ensure consistent spacing for password fields */
 .passwordRow {
   display: flex;
   gap: 20px;
@@ -185,4 +226,94 @@
   border: none;
   cursor: pointer;
   font-family: inherit;
+}
+
+.submitButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spinner {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  color: #e11d48;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background-color: #fee2e2;
+  border-radius: 6px;
+  width: 100%;
+  max-width: 550px;
+  text-align: center;
+}
+
+@media (max-width: 1440px) {
+  .container {
+    height: 550px;
+    top: 40px;
+  }
+
+  .switch {
+    width: 180px;
+    height: 44px;
+  }
+
+  .slider:before {
+    height: 38px;
+    width: 83px;
+  }
+
+  .switch input:checked+.slider:before {
+    transform: translateX(87px);
+  }
+
+  .signIn,
+  .signUp {
+    font-size: 14px;
+  }
+
+  .formContainer {
+    padding: 50px;
+    width: 480px;
+    height: 400px;
+  }
+
+  .formContainer.expanded {
+    width: 530px;
+    height: 600px;
+  }
+
+  .form h2 {
+    font-size: 22px;
+  }
+
+  .form p {
+    font-size: 14px;
+  }
+
+  .form input {
+    font-size: 15px;
+    padding: 5px 12px;
+  }
+
+  .passwordRow {
+    gap: 15px;
+  }
+
+  .form button {
+    font-size: 18px;
+  }
 }

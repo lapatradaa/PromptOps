@@ -4,20 +4,20 @@
     justify-content: space-between;
     padding: 8px 20px;
     background-color: white;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #CFCCE3;
 }
 
 .headerLeft {
-    flex: 1;
+    flex: 1.75;
 }
 
 .headerCenter {
-    flex: 2;
+    flex: 2.5;
     text-align: center;
 }
 
 .headerRight {
-    flex: 1;
+    flex: 1.5;
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
@@ -135,31 +135,39 @@
     }
 }
 
-/* Media queries */
-@media (max-width: 768px) {
+@media (max-width: 1440px) {
     .header {
-        padding: 8px 12px;
+        padding: 6px 18px;
+    }
+
+    .backLinkContainer {
+        width: 30px;
+        height: 30px;
+    }
+
+    .backIcon {
+        font-size: 1.8rem;
     }
 
     .title {
-        font-size: 1rem;
+        font-size: 1.1rem;
     }
 
     .playButton,
     .pauseButton {
-        font-size: 2rem;
+        font-size: 2.2rem;
     }
 
     .debugCounter {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
     }
 
     .errorContainer {
-        padding: 6px 12px;
+        padding: 7px 14px;
     }
 
     .errorMessage {
-        font-size: 12px;
+        font-size: 13px;
     }
 }

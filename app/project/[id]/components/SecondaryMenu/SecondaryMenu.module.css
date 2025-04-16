@@ -4,9 +4,14 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #F2F1F7;
+    border-right: 1px solid #CFCCE3;
     flex-shrink: 0;
     height: 100%;
+    position: relative;
+    z-index: 10;
+    /* Higher z-index to appear above the board */
+    min-width: 350px;
+    /* Prevent shrinking */
 }
 
 .menuList {
@@ -15,12 +20,13 @@
     padding: 8px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1440px) {
     .secondarySidebar {
-        width: 280px;
+        width: 300px;
+        min-width: 300px;
     }
 
     .menuList {
-        padding: 4px;
+        padding: 6px;
     }
 }

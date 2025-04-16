@@ -129,7 +129,7 @@
     border-radius: 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     padding: 8px;
-    min-width: 200px;
+    min-width: 180px;
     z-index: 1000;
 }
 
@@ -149,7 +149,7 @@
 
 .userMenu button:hover {
     background-color: #f5f5f5;
-    border-radius: 20px;
+    border-radius: 10px;
 }
 
 .userMenu button svg {
@@ -192,7 +192,7 @@
     height: 45px;
     border: solid 2px #9F19CC;
     border-radius: 50px;
-    background: none;
+    background: white;
     color: #9F19CC;
     cursor: pointer;
     font-size: 18px;
@@ -257,173 +257,400 @@
     text-align: center;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
+.contextMenu {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    background-color: white;
+    width: 180px;
+    padding: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+    width: 100%;
+}
+
+.spinnerCircle {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(186, 92, 219, 0.2);
+    border-radius: 50%;
+    border-top-color: #BA5CDB;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 1440px) {
     .projects {
         flex-direction: row;
     }
 
     .leftSection {
-        flex: 1.5;
+        flex: 1.8;
     }
 
     .leftHeader {
-        padding: 50px 12px 20px 12px;
+        padding: 60px 14px 20px 14px;
     }
 
     .iconContainer img {
-        width: 25%;
+        width: 28%;
     }
 
     .iconContainer p {
-        font-size: 18px;
-    }
-
-    .leftMain {
-        padding: 80px 0px 80px 50px;
-    }
-
-    .leftMain h2 {
-        font-size: 16px;
-    }
-
-    .leftMain p {
-        font-size: 16px;
-    }
-
-    .menuItem {
-        font-size: 22px;
-    }
-
-    .menuItem p {
-        font-size: 16px;
-    }
-
-    .userProfileContainer {
-        padding: 15px 30px 30px 40px;
-    }
-
-    .userProfileContainer svg {
-        width: 50px;
-        height: 50px;
-    }
-
-    .userMenu button {
-        font-size: 14px;
-        padding: 10px 12px;
-    }
-
-    .centerHeader {
-        padding: 50px 50px 20px;
-    }
-
-    .searchBar {
-        height: 40px;
-        font-size: 16px;
-    }
-
-    .newProjectBtn {
-        height: 40px;
-        font-size: 16px;
-    }
-
-    .centerMain {
-        padding: 0 50px;
-    }
-
-    .rightHeader {
-        padding: 60px 0 0 30px;
-        font-size: 18px;
-    }
-
-    .rightMain {
-        padding: 30px;
-    }
-
-    .historyContent {
-        font-size: 16px;
-    }
-}
-
-@media (max-width: 768px) {
-    .leftSection {
-        flex: 1;
-    }
-
-    .leftHeader {
-        padding: 40px 10px 15px 10px;
-    }
-
-    .iconContainer img {
-        width: 20%;
-    }
-
-    .iconContainer p {
-        font-size: 16px;
-    }
-
-    .leftMain {
-        padding: 60px 0px 60px 30px;
-    }
-
-    .leftMain h2 {
-        font-size: 14px;
-    }
-
-    .leftMain p {
-        font-size: 14px;
-    }
-
-    .menuItem {
         font-size: 20px;
     }
 
-    .menuItem p {
-        font-size: 14px;
+    .leftMain {
+        padding: 90px 0px 90px 70px;
     }
 
-    .userProfileContainer {
-        padding: 10px 20px 20px 30px;
+    .leftMain h2 {
+        font-size: 18px;
     }
 
-    .userProfileContainer svg {
-        width: 40px;
-        height: 40px;
-    }
-
-    .userMenu button {
-        font-size: 12px;
-        padding: 8px 10px;
-    }
-
-    .centerHeader {
-        padding: 40px 30px 15px;
-    }
-
-    .searchBar {
-        height: 35px;
-        font-size: 14px;
-    }
-
-    .newProjectBtn {
-        height: 35px;
-        font-size: 14px;
-    }
-
-    .centerMain {
-        padding: 0 30px;
-    }
-
-    .rightHeader {
-        padding: 50px 0 0 20px;
+    .leftMain p {
         font-size: 16px;
     }
 
+    .menuItem {
+        font-size: 24px;
+    }
+
+    .menuItem p {
+        font-size: 16px;
+    }
+
+    .userProfileContainer {
+        padding: 18px 35px 35px 50px;
+    }
+
+    .userProfileContainer svg {
+        width: 55px;
+        height: 55px;
+    }
+
+    .userMenu button {
+        font-size: 15px;
+        padding: 10px 14px;
+    }
+
+    .centerHeader {
+        padding: 65px 60px 25px;
+    }
+
+    .searchBar {
+        height: 42px;
+        font-size: 17px;
+    }
+
+    .newProjectBtn {
+        height: 42px;
+        font-size: 17px;
+    }
+
+    .centerMain {
+        padding: 0 60px;
+    }
+
+    .rightHeader {
+        padding: 70px 0 0 35px;
+        font-size: 20px;
+    }
+
     .rightMain {
-        padding: 20px;
+        padding: 35px;
     }
 
     .historyContent {
-        font-size: 14px;
+        font-size: 18px;
+    }
+}
+
+/* Full HD (1681px - 1920px) */
+@media (min-width: 1681px) and (max-width: 1920px) {
+    .leftSection {
+        flex: 1.7;
+    }
+
+    .centerSection {
+        flex: 6.3;
+    }
+
+    .leftHeader {
+        padding: 85px 18px 35px;
+    }
+
+    .iconContainer img {
+        width: 32%;
+    }
+
+    .iconContainer p {
+        font-size: 26px;
+    }
+
+    .leftMain {
+        padding: 110px 0 110px 90px;
+        gap: 12px;
+    }
+
+    .leftMain h2 {
+        font-size: 20px;
+    }
+
+    .menuItem {
+        font-size: 30px;
+        padding: 10px 10px 0 10px;
+    }
+
+    .leftMain p {
+        font-size: 20px;
+    }
+
+    .indicator {
+        width: 9px;
+        height: 48px;
+    }
+
+    .userProfileContainer {
+        padding: 22px 45px 45px 70px;
+        font-size: 22px;
+    }
+
+    .userProfileContainer svg {
+        width: 60px;
+        height: 60px;
+    }
+
+    .centerHeader {
+        padding: 80px;
+    }
+
+    .searchBar,
+    .newProjectBtn {
+        height: 50px;
+        font-size: 20px;
+    }
+
+    .centerMain {
+        padding: 0 80px;
+    }
+
+    .rightHeader {
+        padding: 85px 0 0 45px;
+        font-size: 24px;
+    }
+}
+
+/* 2K Resolution (1921px - 2560px) */
+@media (min-width: 1921px) and (max-width: 2560px) {
+    .leftSection {
+        flex: 1.6;
+    }
+
+    .centerSection {
+        flex: 6.4;
+    }
+
+    .leftHeader {
+        padding: 90px 20px 35px;
+    }
+
+    .iconContainer img {
+        width: 35%;
+    }
+
+    .iconContainer p {
+        font-size: 28px;
+    }
+
+    .leftMain {
+        padding: 120px 0 120px 100px;
+        gap: 15px;
+    }
+
+    .leftMain h2 {
+        font-size: 22px;
+    }
+
+    .menuItem {
+        font-size: 32px;
+        padding: 12px 12px 0 12px;
+    }
+
+    .leftMain p {
+        font-size: 22px;
+        padding: 12px;
+    }
+
+    .indicator {
+        width: 10px;
+        height: 52px;
+    }
+
+    .userProfileContainer {
+        padding: 25px 50px 50px 75px;
+        font-size: 24px;
+        gap: 25px;
+    }
+
+    .userProfileContainer svg {
+        width: 70px;
+        height: 70px;
+    }
+
+    .userMenu {
+        min-width: 200px;
+    }
+
+    .userMenu button {
+        padding: 14px 18px;
+        font-size: 18px;
+    }
+
+    .centerHeader {
+        padding: 90px;
+    }
+
+    .searchBar,
+    .newProjectBtn {
+        height: 55px;
+        font-size: 22px;
+    }
+
+    .centerMain {
+        padding: 0 90px;
+    }
+
+    .rightHeader {
+        padding: 90px 0 0 50px;
+        font-size: 26px;
+    }
+
+    .rightMain {
+        padding: 45px;
+    }
+}
+
+/* 4K/UHD (2561px and above) */
+@media (min-width: 2561px) {
+    .leftSection {
+        flex: 1.5;
+    }
+
+    .centerSection {
+        flex: 6.5;
+    }
+
+    .leftHeader {
+        padding: 100px 25px 40px;
+    }
+
+    .iconContainer img {
+        width: 38%;
+    }
+
+    .iconContainer p {
+        font-size: 32px;
+    }
+
+    .leftMain {
+        padding: 140px 0 140px 120px;
+        gap: 18px;
+    }
+
+    .leftMain h2 {
+        font-size: 26px;
+    }
+
+    .menuItem {
+        font-size: 36px;
+        padding: 14px 14px 0 14px;
+    }
+
+    .leftMain p {
+        font-size: 24px;
+        padding: 15px;
+    }
+
+    .indicator {
+        width: 12px;
+        height: 60px;
+    }
+
+    .userProfileContainer {
+        padding: 30px 60px 60px 90px;
+        font-size: 26px;
+        gap: 30px;
+    }
+
+    .userProfileContainer svg {
+        width: 80px;
+        height: 80px;
+    }
+
+    .userMenu {
+        min-width: 220px;
+    }
+
+    .userMenu button {
+        padding: 16px 20px;
+        font-size: 20px;
+    }
+
+    .centerHeader {
+        padding: 100px;
+    }
+
+    .searchBar,
+    .newProjectBtn {
+        height: 60px;
+        font-size: 24px;
+    }
+
+    .searchBar {
+        padding: 0 30px;
+    }
+
+    .centerMain {
+        padding: 0 100px;
+    }
+
+    .rightHeader {
+        padding: 100px 0 0 60px;
+        font-size: 30px;
+    }
+
+    .rightMain {
+        padding: 60px;
+    }
+
+    .emptyMessage,
+    .historyContent {
+        font-size: 24px;
+    }
+
+    .contextMenu {
+        width: 200px;
+    }
+
+    .spinnerCircle {
+        width: 60px;
+        height: 60px;
+        border-width: 6px;
     }
 }

@@ -1,82 +1,133 @@
 .wrapper {
     width: 100%;
     height: 100%;
-    background-color: #F8F7FF;
+    background-color: #f9f9ff;
 }
 
 .container {
-    padding: 100px;
+    padding: 80px;
 }
 
 .form {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    max-width: 700px;
 }
 
 .title {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 600;
     color: #403B61;
-    margin-bottom: 32px;
+    margin-bottom: 30px;
 }
 
 .field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    margin: 10px 0;
+}
+
+.field label[for="type"] {
+    display: block;
+    color: #797690;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 10px;
 }
 
 .label {
-    font-size: 16px;
+    display: block;
     color: #797690;
-    text-transform: uppercase;
+    letter-spacing: 0.5px;
     font-weight: 600;
-    letter-spacing: 1px;
+    margin-bottom: 10px;
 }
 
 .select {
     width: 100%;
-    padding: 10px 16px;
+    padding: 8px 20px;
+    /* margin-bottom: 20px; */
     border: 1px solid #9F9DB0;
-    border-radius: 12px;
-    background-color: white;
+    border-radius: 100px;
     font-size: 16px;
     color: #403B61;
     outline: none;
-    transition: all 0.2s ease;
     font-family: inherit;
+    transition: border-color 0.2s ease;
+    background-color: white;
 }
 
 .select:focus {
     border-color: #BA5CDB;
-    box-shadow: 0 0 0 2px rgba(186, 92, 219, 0.1);
 }
 
 .select.placeholder {
     color: #9F9DB0;
 }
 
+.radioGroupInline {
+    display: flex;
+    flex-direction: row;
+    gap: 180px;
+    align-items: center;
+    margin-top: 10px;
+    /* margin-bottom: 20px; */
+}
+
+.radioLabelInline {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    color: #797690;
+}
+
+.radioInputInline {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 2px solid #9F9DB0;
+    border-radius: 50%;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    position: relative;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    display: inline-block;
+    vertical-align: middle;
+    background-color: white;
+}
+
+.radioInputInline:checked {
+    border-color: #BA5CDB;
+}
+
+.radioInputInline:checked::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #BA5CDB;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0;
+}
+
 .radioGroup {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 5px;
+    margin-top: 10px;
 }
 
 .radioLabel {
     display: flex;
     align-items: center;
-    gap: 12px;
+    padding-bottom: 5px;
     cursor: pointer;
-    position: relative;
-    flex-wrap: wrap;
-}
-
-.radioLabel .textInput {
-    flex: 1;
-    min-width: 200px;
-    margin-left: 15px;
 }
 
 .radioInput {
@@ -85,21 +136,23 @@
     height: 20px;
     border: 2px solid #9F9DB0;
     border-radius: 50%;
+    margin-right: 10px;
     cursor: pointer;
     position: relative;
     transition: all 0.2s ease;
+    background-color: white;
 }
 
 .radioInput:checked {
-    border-color: #9F9DB0;
+    border-color: #BA5CDB;
 }
 
 .radioInput:checked::after {
     content: '';
     position: absolute;
-    width: 12px;
-    height: 12px;
-    background: #9F9DB0;
+    width: 10px;
+    height: 10px;
+    background: #BA5CDB;
     border-radius: 50%;
     top: 50%;
     left: 50%;
@@ -107,25 +160,25 @@
 }
 
 .radioText {
+    color: #797690;
     font-size: 16px;
-    color: #9F9DB0;
 }
 
 .textInput {
-    padding: 10px 16px;
-    border: 1px solid #9F9DB0;
-    border-radius: 12px;
-    font-size: 16px;
     width: 100%;
-    background-color: white;
+    padding: 8px 20px;
+    border: 1px solid #9F9DB0;
+    border-radius: 100px;
+    font-size: 16px;
+    font-family: inherit;
     color: #403B61;
     outline: none;
     transition: all 0.2s ease;
-    font-family: inherit;
+    background-color: white;
 }
 
-.textInput::placeholder {
-    color: #9F9DB0;
+.textInput:focus:not(.disabled) {
+    border-color: #BA5CDB;
 }
 
 .textInput.disabled {
@@ -135,30 +188,126 @@
     border-color: #E5E5E5;
 }
 
-.textInput:focus {
-    border-color: #BA5CDB;
-    box-shadow: 0 0 0 2px rgba(186, 92, 219, 0.1);
+.textInput::placeholder {
+    color: #9F9DB0;
 }
 
 .button {
-    padding: 12px;
-    width: 20%;
+    align-self: flex-end;
+    padding: 12px 35px;
     background-color: #BA5CDB;
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: 100px;
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    margin-top: 8px;
+    margin-top: 40px;
 }
 
-.button:hover {
+.button:hover:not(:disabled) {
     transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(186, 92, 219, 0.2);
 }
 
-.button:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(186, 92, 219, 0.1);
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.buttonUpdating {
+    color: white;
+}
+
+.field .passwordContainer {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+.field .passwordContainer .textInput {
+    width: 100%;
+    padding-right: 40px;
+    /* Space for eye icon */
+}
+
+.field .eyeIcon {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.field .eyeIcon svg {
+    width: 20px;
+    height: 20px;
+    transition: opacity 0.3s;
+    color: #666;
+}
+
+.field .eyeIcon:hover svg {
+    opacity: 0.7;
+    color: #333;
+}
+
+
+@media (max-width: 1440px) {
+    .container {
+        padding: 70px;
+    }
+
+    .title {
+        font-size: 20px;
+        margin-bottom: 25px;
+    }
+
+    .select,
+    .textInput {
+        padding: 7px 18px;
+        font-size: 13px;
+    }
+
+    .radioLabel {
+        font-size: 13px;
+    }
+
+    .radioGroupInline {
+        gap: 150px;
+    }
+
+    .radioLabelInline {
+        font-size: 13px;
+    }
+
+    .radioInput,
+    .radioInputInline {
+        width: 18px;
+        height: 18px;
+    }
+
+    .radioInput:checked::after,
+    .radioInputInline:checked::after {
+        width: 8px;
+        height: 8px;
+    }
+
+    .button {
+        padding: 10px 30px;
+        font-size: 13px;
+        margin-top: 30px;
+    }
+
+    .radioText {
+        font-size: 13px;
+    }
 }

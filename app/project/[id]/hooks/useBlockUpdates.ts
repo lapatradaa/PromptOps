@@ -77,10 +77,6 @@ export const useBlockUpdates = (initialBlocks: Block[] = []) => {
         setTotalBlocks(0);
     }, []);
 
-    // const getConnectedBlocks = useCallback(() => {
-    //     return blocks.filter(block => block.config?.isConnected);
-    // }, [blocks]);
-
     return {
         blocks,
         totalBlocks,

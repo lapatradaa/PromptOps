@@ -1,0 +1,94 @@
+.container {
+  background-color: white;
+  border-radius: 0.75rem;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.containerHover {
+  border-color: #BA5CDB;
+  background-color: #faf5ff;
+  box-shadow: 0 0 10px rgba(186, 92, 219, 0.3);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-left: 5px;
+}
+
+.evaluationIcon {
+  font-size: 1.5rem;
+  color: #BA5CDB;
+}
+
+.title {
+  color: #403B61;
+}
+
+.dragHandle {
+  position: relative;
+  top: 5px;
+  font-size: 1.5rem;
+  color: #9996AC;
+}
+
+.content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.topicItem {
+  display: flex;
+  flex-direction: column;
+  padding: 13px 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  transition: all 0.2s ease;
+}
+
+.topicItem:hover {
+  background-color: #f9f9ff;
+  border-color: #BA5CDB;
+}
+
+.topicHeader {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.topicText {
+  flex: 1;
+  color: #6B7280;
+}
+
+.removeButton {
+  position: relative;
+  top: 5px;
+  color: #9CA3AF;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.removeButton:hover {
+  color: #4B5563;
+}
+
+.topicConfig {
+  width: 100%;
+  margin-top: 10px;
+}

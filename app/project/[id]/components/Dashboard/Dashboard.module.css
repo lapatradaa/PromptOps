@@ -1,0 +1,751 @@
+/* Main Layout Components */
+.dashboardSidebar {
+    width: 350px;
+    background-color: white;
+    border-left: 1px solid #CFCCE3;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    height: 100%;
+    overflow-x: hidden;
+    padding: 0;
+    margin: 0;
+    z-index: 1000;
+    position: relative;
+}
+
+.dashboardHeader {
+    padding: 20px;
+    display: flex;
+    margin-bottom: 20px;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #CFCCE3;
+}
+
+.dashboardHeader span {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+}
+
+.dashboardHeader .textContent {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dashboardHeader h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #403B61;
+    font-weight: 500;
+}
+
+.dashboardHeader p {
+    margin: 0;
+    font-size: 14px;
+    color: #9F9DB0;
+    line-height: 1.2;
+}
+
+.dashboardHeader svg {
+    font-size: 40px;
+    color: #CCA3DA;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #9F9DB0;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+    background-color: #F2F1F7;
+    color: #403B61;
+}
+
+.dashboardContent {
+    padding: 0 20px;
+    overflow-y: auto;
+    flex: 1;
+    max-width: 100%;
+}
+
+/* Name Container */
+.nameContainer {
+    padding: 20px 0;
+}
+
+.nameContainer .label {
+    color: #333333;
+}
+
+.nameContainer .value {
+    font-weight: 400;
+    color: #9F9DB0;
+}
+
+.nameContainer p {
+    margin: 0;
+    font-size: 15px;
+    color: #333;
+}
+
+/* Results Section */
+.resultContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.noResults {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6B7280;
+}
+
+.noResults p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.noResults p:first-child {
+    font-weight: 500;
+    color: #403B61;
+    margin-bottom: 8px;
+}
+
+/* Common Section Styles */
+.scoreSection,
+.beforePerturbSection,
+.afterPerturbationContainer {
+    border: 1px solid #CFCCE3;
+    border-radius: 35px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.scoreSection h2,
+.beforePerturbSection h2,
+h2.afterPerturbHeader {
+    font-size: 18px;
+    color: #666281;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    font-weight: 500;
+    text-align: left;
+    border-bottom: 1px solid #CFCCE3;
+}
+
+/* After Perturbation Section */
+.afterPerturbSection p {
+    font-size: 18px;
+    color: #2196F3;
+    font-weight: 500;
+    text-align: left;
+    padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.afterPerturbationContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Trend Icon */
+.trendIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+}
+
+.trendIcon svg {
+    font-size: 22px;
+}
+
+/* Applicability Header */
+.applicabilityHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.applicabilityHeader p {
+    color: #9F9DB0;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.passNoContainer {
+    background-color: #EBD8F1;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.passNoContainer p {
+    color: #BA5CDB;
+    font-weight: 500;
+    letter-spacing: 0;
+    margin: 0;
+    font-size: 12px;
+}
+
+/* Perturbation Items */
+.perturbationList {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 10px 0 10px;
+}
+
+/* Status Indicators */
+.ringContainer {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 4px solid;
+}
+
+.pass {
+    border-color: #93D374;
+}
+
+.checkmark {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 4px solid #93D374;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #93D374;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.checkmark svg {
+    color: #93D374;
+    font-size: 18px;
+}
+
+.fail {
+    border-color: #E08080;
+}
+
+.warning {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 4px solid #E08080;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #E08080;
+    font-size: 16px;
+}
+
+.warning svg {
+    color: #E08080;
+    font-size: 18px;
+}
+
+.neutral {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #E5E7EB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6B7280;
+    border-color: #999;
+}
+
+/* Chevron Container */
+.chevronContainer {
+    display: flex;
+    margin-left: auto;
+    color: #999;
+    font-size: 20px;
+}
+
+/* Perturbation Name */
+.perturbationName {
+    margin: 0;
+    font-weight: 400;
+    flex: 1;
+    font-size: 15px;
+    color: #333;
+    margin-left: 12px;
+}
+
+/* Detail Section */
+.detailsContainer {
+    margin-left: 10px;
+}
+
+.perturbationDetail {
+    padding: 5px;
+    margin: 10px 0;
+}
+
+.backHeader {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    color: #403B61;
+}
+
+/* Common Button Styles */
+.backButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    color: #666;
+    padding: 0;
+    margin-right: 10px;
+}
+
+.backButton:hover {
+    color: #333;
+}
+
+.chartContainer {
+    margin: 0 auto 16px;
+    width: 80%;
+    height: auto;
+}
+
+.detailSection {
+    padding: 15px;
+    color: #9F9DB0;
+}
+
+/* Section Header */
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: calc(100% + 40px);
+    margin-left: -20px;
+    margin-right: -20px;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    padding: 10px;
+}
+
+.sectionHeader p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #403B61;
+}
+
+.toggleButton {
+    display: flex;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.detailSection h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    padding-bottom: 4px;
+}
+
+.detailSection ul {
+    list-style: disc;
+    margin: 0;
+    padding-left: 20px;
+}
+
+.detailSection p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Applicable Items */
+.applicableList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.applicableContainer {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    padding: 10px 15px;
+    color: #8d8d8d;
+    font-size: 0.9rem;
+    font-weight: 400;
+}
+
+/* Non-Applicable Items */
+.nonApplicableList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.nonApplicableContainer {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.nonApplicableTop {
+    background-color: #fff;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+    color: #8d8d8d;
+}
+
+.nonApplicableTop p,
+.nonApplicableBottom p {
+    margin: 0;
+    font-weight: 400;
+}
+
+.nonApplicableBottom {
+    background-color: #fff;
+    padding: 10px 15px;
+    color: #E08080;
+}
+
+/* Perturbation Results Panel */
+.headerContent {
+    display: flex;
+    flex-direction: column;
+}
+
+.headerContent h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+}
+
+.headerContent p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.headerContent .toggleViewButton {
+    margin-top: 10px;
+    padding: 0 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    border: none;
+    background-color: #EBD8F1;
+    color: #BA5CDB;
+    cursor: pointer;
+}
+
+.headerContent .toggleViewButton svg {
+    color: #BA5CDB;
+}
+
+.perturbationContainer {
+    padding: 15px 0;
+}
+
+.perturbationHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.perturbationHeader p {
+    font-size: 13px;
+    /* color: #666; */
+    letter-spacing: 1px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.perturbationItem {
+    padding: 12px 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-radius: 20px;
+}
+
+.perturbationItem:hover {
+    background-color: #f9f9f9;
+    border-radius: 20px;
+}
+
+.perturbationItemContent {
+    display: flex;
+    align-items: center;
+}
+
+/* Detail View */
+.detailHeader {
+    display: flex;
+    align-items: center;
+}
+
+/* Circle Chart */
+.circleChartContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.donutChart {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.donutInner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.donutLabel {
+    font-size: 24px;
+    font-weight: 500;
+    color: #333;
+}
+
+.donutSvg {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.donutRing {
+    stroke: #f2f2f2;
+}
+
+.donutSegment {
+    stroke: #93D374;
+    transform: rotate(-90deg);
+    transform-origin: center;
+    transition: stroke-dasharray 0.8s ease;
+}
+
+/* Vote Indicators */
+.voteContainer {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 15px;
+}
+
+.voteItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.thumbUp {
+    color: #93D374;
+    font-size: 24px;
+}
+
+.thumbDown {
+    color: #F87171;
+    font-size: 24px;
+}
+
+.voteItem span {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Pagination - separated from circleChartContainer */
+.paginationInfo {
+    font-size: 14px;
+    color: #666;
+    margin: 10px 0 20px;
+    text-align: center;
+    width: 100%;
+}
+
+/* Example Section */
+.exampleSection {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.instructionBox,
+.contextBox,
+.questionBox,
+.answerBox {
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+
+.instructionBox {
+    background-color: #f0f0f5;
+    display: flex;
+    gap: 10px;
+}
+
+.contextBox {
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+}
+
+.contextHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.contextIcon,
+.instructionIcon {
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+.reasonText {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #ddd;
+    color: #F87171;
+    font-style: italic;
+}
+
+/* Navigation Buttons */
+.navigationButtons {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+
+.navButton {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: #BA5CDB;
+    color: white;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navButton.disabled {
+    background-color: #d8d8d8;
+    cursor: not-allowed;
+}
+
+/* Media Queries */
+@media (max-width: 1440px) {
+    .dashboardSidebar {
+        width: 320px;
+    }
+
+    .dashboardHeader {
+        padding: 18px;
+    }
+
+    .dashboardHeader h2 {
+        font-size: 16px;
+    }
+
+    .dashboardHeader p {
+        font-size: 13px;
+    }
+
+    .dashboardHeader svg {
+        font-size: 36px;
+    }
+
+    .closeButton {
+        font-size: 22px;
+        width: 30px;
+        height: 30px;
+    }
+
+    .resultContainer {
+        gap: 20px;
+    }
+
+    .noResults {
+        padding: 35px 18px;
+        font-size: 14px;
+    }
+
+    .scoreSection,
+    .beforePerturbSection,
+    .afterPerturbationContainer {
+        padding: 18px;
+        border-radius: 30px;
+    }
+
+    .scoreSection h2,
+    .beforePerturbSection h2,
+    h2.afterPerturbHeader {
+        font-size: 16px;
+        margin-bottom: 20px;
+        padding-bottom: 8px;
+    }
+
+    .afterPerturbSection p {
+        font-size: 16px;
+    }
+
+    .trendIcon svg {
+        font-size: 20px;
+    }
+}

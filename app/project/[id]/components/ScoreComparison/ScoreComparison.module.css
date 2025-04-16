@@ -1,8 +1,22 @@
 .container {
-    padding: 100px;
-    background-color: #f8f5fc;
-    border-radius: 10px;
+    padding: 70px;
+    background-color: #f9f9ff;
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
+    max-height: 100vh;
+}
+
+.errorMessage {
+    background-color: #fff3f5;
+    border: 1px solid #ffb8c2;
+    border-left: 4px solid #ff6b81;
+    color: #d63031;
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 14px;
 }
 
 .title {
@@ -11,10 +25,128 @@
     margin-bottom: 1.5rem;
 }
 
+/* Control Row */
+.controlRow {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 15px;
+}
+
+/* Project Type Filter */
+.projectTypeFilter {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: white;
+    border-radius: 20px;
+    border: 1px solid #9c9980;
+}
+
+.filterLabel {
+    font-weight: 500;
+    margin-right: 15px;
+    color: #6c648a;
+}
+
+.typeButtons {
+    display: flex;
+    gap: 8px;
+}
+
+.typeButton {
+    padding: 6px 15px;
+    border: 1px solid #9c9980;
+    border-radius: 20px;
+    background-color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.typeButton:hover {
+    background-color: #e0d6f8;
+}
+
+.activeType {
+    background-color: #C87DE2;
+    color: white;
+    border-color: #C87DE2;
+    font-weight: 500;
+}
+
+.activeType:hover {
+    background-color: #BA5CDB;
+}
+
+/* Comparison Controls */
+.comparisonControls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.controlButton {
+    padding: 6px 12px;
+    border: 1px solid #9c9980;
+    border-radius: 20px;
+    background-color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.controlButton:hover {
+    background-color: #e0d6f8;
+}
+
+.activeControl {
+    background-color: #C87DE2;
+    color: white;
+    border-color: #C87DE2;
+}
+
+/* Back button */
+.backButton {
+    padding: 8px 15px;
+    border: 1px solid #9c9980;
+    border-radius: 20px;
+    background-color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 15px;
+}
+
+.backButton:hover {
+    background-color: #e0d6f8;
+}
+
+/* Model Selection Area */
+.modelSelectionArea {
+    transition: all 0.3s ease;
+    max-height: 70vh;
+    overflow-y: auto;
+    margin-bottom: 140px;
+    /* Add space for fixed selectedSection */
+}
+
+.modelSelectionArea.hidden {
+    display: none;
+}
+
 .categories {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1rem;
 }
 
 .category {
@@ -23,29 +155,53 @@
     gap: 0.5rem;
 }
 
+.categoryHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.categoryHeader:hover {
+    background-color: rgba(224, 214, 248, 0.3);
+}
+
 .categoryTitle {
     font-size: 1rem;
     font-weight: 500;
     color: #6c648a;
-    margin-bottom: 0.5rem;
+    margin: 0;
+    text-align: left;
+}
+
+.toggleIcon {
+    color: #6c648a;
+    font-size: 0.8rem;
 }
 
 .modelRow {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .versionButton {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    padding: 15px 10px 15px 30px;
-    width: 230px;
+    padding: 12px 8px 12px 20px;
+    width: 220px;
     border: 1px solid #9c9980;
     border-radius: 20px;
     background-color: white;
-    font-size: 15px;
+    font-size: 14px;
     cursor: pointer;
     transition: background-color 0.2s;
     text-align: left;
@@ -56,73 +212,49 @@
     background-color: #e0d6f8;
 }
 
-.versionButton.selected {
-    outline: 2px solid #BA5CDB;
-    border-color: #BA5CDB;
-    color: #BA5CDB;
-    font-weight: 500;
-}
-
-.addButton {
-    padding: 0.5rem 1rem;
-    background-color: #a267e8;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.addButton:hover {
-    background-color: #8a4fc5;
-}
-
 .selectedSection {
-    margin-top: 5rem;
+    margin-top: 2rem;
     background-color: #fff;
     border: #9c9980 1px solid;
-    border-radius: 100px;
-    padding: 2rem;
+    border-radius: 50px;
+    padding: 1.5rem;
     display: flex;
     flex-direction: row;
-    /* Horizontal layout */
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    height: 148px;
-    /* Fix the height of the section */
-    overflow: hidden;
-    /* Prevent section from expanding */
+    min-height: 80px;
+    max-height: 120px;
+    overflow: visible;
+    position: fixed;
+    bottom: 40px;
+    left: 130px;
+    right: 70px;
+    z-index: 100;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
 .selectedModels {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.8rem;
     flex: 1;
-    /* Take up remaining space */
     max-height: 100%;
-    /* Use the available height of the section */
     overflow-y: auto;
-    /* Enable vertical scrolling when content exceeds */
-    padding-right: 1rem;
-    /* Add padding for scrollbar visibility */
+    padding-right: 0.8rem;
 }
 
 .modelsContainer {
     flex: 1;
-    /* Allows models to take up the available space */
     height: 100%;
-    /* Match the height of the section */
     overflow-y: auto;
-    /* Allow scrolling for overflow content */
 }
 
 .compareActions {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.8rem;
     justify-content: flex-end;
-    /* Keep buttons on the right */
 }
 
 .selectedModel {
@@ -130,25 +262,26 @@
     align-items: center;
     gap: 0.5rem;
     background-color: #fff;
-    padding: 1rem 2rem;
-    border-radius: 100px;
+    padding: 0.7rem 1.5rem;
+    border-radius: 50px;
     border: 1px solid #9c9980;
 }
 
 .selectedModel span {
     color: #666281;
-    padding-right: 20px;
+    padding-right: 15px;
+    font-size: 14px;
 }
 
 .removeButton {
     color: #CFCCE3;
     background: none;
     border: none;
-    font-size: 20px;
+    font-size: 18px;
     cursor: pointer;
-    padding: 0; 
-    margin: 0; 
-    width: auto; 
+    padding: 0;
+    margin: 0;
+    width: auto;
     height: auto;
     line-height: 1;
 }
@@ -158,27 +291,21 @@
     background: none;
     display: flex;
     align-items: center;
-    padding-right: 10px;
+    padding-right: 8px;
+    color: #9c9980;
 }
 
 .clearAllButton svg {
-    font-size: 26px;
+    font-size: 22px;
     cursor: pointer;
 }
 
-.selectedSection .compareContainer {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1rem;
-}
-
 .compareButton {
-    padding: 1rem 2rem;
-    font-size: 1rem;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
     font-weight: bold;
     background-color: #C87DE2;
-    border-radius: 100px;
+    border-radius: 50px;
     color: #fff;
     border: none;
     cursor: pointer;
@@ -197,41 +324,247 @@
     position: absolute;
     top: 100%;
     left: 0;
-    width: 230px;
+    width: 320px;
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 10;
+    padding: 12px;
 }
 
-.dropdownOption {
-    display: block;
+.dropdownMenuUp {
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 5px;
+}
+
+.optionsTable {
     width: 100%;
-    padding: 1rem 1rem;
-    background-color: transparent;
-    border: none;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    border-collapse: collapse;
+    font-size: 14px;
 }
 
-.dropdownOption:hover {
-    background-color: #e8e1f7;
+.optionsTable th,
+.optionsTable td {
+    text-align: center;
+    padding: 6px 4px;
 }
 
-.dropdownOption:first-child {
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-}
-
-.dropdownOption:last-child {
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-}
-
-.subText {
-    display: block;
-    font-size: 0.85rem;
+.tableHeader {
     color: #6c648a;
+    font-size: 0.7rem;
+    font-weight: 500;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.formatCell {
+    font-weight: 500;
+    text-align: left;
+    padding-left: 8px !important;
+    color: #333;
+}
+
+.tableOption {
+    padding: 5px 10px;
+    border: 1px solid #C87DE2;
+    border-radius: 12px;
+    background-color: white;
+    font-size: 12px;
+    color: #C87DE2;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.tableOption:hover {
+    background-color: #C87DE2;
+    color: white;
+}
+
+/* Results Container */
+.resultsContainer {
+    margin-top: 2rem;
+    background-color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 1px solid #9c9980;
+}
+
+.categoryToggle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.categoryButton {
+    padding: 6px 12px;
+    border: 1px solid #9c9980;
+    border-radius: 20px;
+    background-color: white;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.categoryButton:hover {
+    background-color: #e0d6f8;
+}
+
+.activeCategory {
+    background-color: #C87DE2;
+    color: white;
+    border-color: #C87DE2;
+}
+
+.categoryDivider {
+    width: 1px;
+    background-color: #9c9980;
+    margin: 0 5px;
+}
+
+/* Filter Controls */
+.filterContainer {
+    position: relative;
+}
+
+.filterButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 15px;
+    border: 1px solid #9c9980;
+    border-radius: 20px;
+    background-color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filterButton:hover {
+    background-color: #e0d6f8;
+}
+
+.activeFilter {
+    background-color: #C87DE2;
+    color: white;
+    border-color: #C87DE2;
+}
+
+.filterTag {
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: #C87DE2;
+    background-color: #f5f0ff;
+    padding: 2px 8px;
+    border-radius: 15px;
+    border: 1px solid #e8d8f3;
+}
+
+.resultsContainer {
+    background-color: white;
+    border-radius: 30px;
+    padding: 40px 25px;
+    margin-top: 24px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.chartContainer {
+    margin: 20px 0;
+    height: 400px;
+}
+
+.legendContainer {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 16px;
+    padding: 16px;
+    border-top: 1px solid #eee;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legendColor {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.legendText {
+    display: flex;
+    flex-direction: column;
+}
+
+.legendModelName {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.legendModelInfo, .legendModelTimeStamp {
+    color: #777;
+    font-size: 12px;
+}
+
+@media (max-width: 1440px) {
+    .container {
+        padding: 70px;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .modelSelectionArea {
+        max-height: 70vh;
+    }
+
+    .categoryHeader {
+        padding: 0.4rem;
+    }
+
+    .categoryTitle {
+        font-size: 0.9rem;
+    }
+
+    .modelRow {
+        gap: 0.8rem;
+    }
+
+    .versionButton {
+        width: 210px;
+        padding: 10px 8px 10px 16px;
+        font-size: 13px;
+    }
+
+    .dropdownMenu {
+        width: 300px;
+    }
+
+    .optionsTable {
+        font-size: 13px;
+    }
+
+    .tableOption {
+        padding: 4px 8px;
+    }
+
+    .selectedSection {
+        padding: 1.2rem;
+        min-height: 100px;
+        max-height: 100px;
+    }
+
+    .selectedModel {
+        padding: 0.6rem 1.2rem;
+    }
+
+    .compareButton {
+        padding: 0.7rem 1.3rem;
+        font-size: 0.85rem;
+    }
 }

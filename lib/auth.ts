@@ -33,11 +33,11 @@ export const authOptions: NextAuthOptions = {
                         return null;
                     }
 
-                    console.log("User successfully authorized:", {
-                        id: user._id.toString(),
-                        username: user.username,
-                        email: user.email,
-                    });
+                    // console.log("User successfully authorized:", {
+                    //     id: user._id.toString(),
+                    //     username: user.username,
+                    //     email: user.email,
+                    // });
 
                     return { id: user._id.toString(), username: user.username };
                 } catch (error) {

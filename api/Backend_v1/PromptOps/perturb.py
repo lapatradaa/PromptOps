@@ -1,7 +1,9 @@
+# api/Backend_v1/PromptOps/perturb.py
+
 import random
 import string
+import math
 import pandas as pd
-import pickle
 import os
 import nltk
 from nltk.tokenize import word_tokenize
@@ -10,142 +12,182 @@ from nltk import pos_tag
 from textblob import TextBlob
 from PyDictionary import PyDictionary  # Switch back to PyDictionary
 import spacy
-import openai
 import re
-import language_tool_python
 from nltk.corpus import wordnet as wn
-# import coreferee
 import requests  # for llama lmstudio llm
 import spacy
-from spacy.matcher import Matcher
-# import neuralcoref
-# from PromptOps.act_pas import active_to_passive
+import inflect
 
 nlp = spacy.load("en_core_web_sm")
-# nlp.add_pipe("coreferee")
 
 dictionary = PyDictionary()  # Initialize PyDictionary
 
-url = "http://127.0.0.1:8000/v1/chat/completions"
+# url = "http://127.0.0.1:8000/v1/chat/completions"
 
 
-def get_wordnet_pos(treebank_tag):
-    """Converts Treebank POS tags to WordNet POS tags."""
-    if treebank_tag.startswith('J'):
-        return wordnet.ADJ
-    elif treebank_tag.startswith('V'):
-        return wordnet.VERB
-    elif treebank_tag.startswith('N'):
-        return wordnet.NOUN
-    elif treebank_tag.startswith('R'):
-        return wordnet.ADV
-    else:
-        return wordnet.NOUN  # Default to noun if unknown
+class QuestionConverter:
+    def __init__(self):
+        self.nlp = spacy.load("en_core_web_sm")
+        self.inflect_engine = inflect.engine()
 
+        # Mapping of auxiliary verbs to their passive forms
+        self.aux_mapping = {
+            'do': 'is',
+            'does': 'is',
+            'did': 'was',
+            'will': 'will be',
+            'can': 'can be',
+            'could': 'could be',
+            'should': 'should be',
+            'would': 'would be',
+            'might': 'might be',
+            'must': 'must be'
+        }
 
-def get_past_participle(verb: str) -> str:
-    """
-    Retrieve the past participle of a given verb.
-    This is a simple mapping for common verbs. In a real scenario, we would use an NLP library like NLTK.
-    """
-    irregular_verbs = {
-        "eat": "eaten",
-        "see": "seen",
-        "write": "written",
-        "go": "gone",
-        "do": "done",
-        "make": "made",
-        "play": "played",
-        "explain": "explained",
-        "clean": "cleaned",
-        "love": "loved"
-    }
-    return irregular_verbs.get(verb, verb + "ed")
+        # Common irregular verb past participles
+        self.irregular_verbs = {
+            'eat': 'eaten',
+            'teach': 'taught',
+            'draw': 'drawn',
+            'drink': 'drunk',
+            'drive': 'driven',
+            'give': 'given',
+            'know': 'known',
+            'see': 'seen',
+            'show': 'shown',
+            'speak': 'spoken',
+            'take': 'taken',
+            'write': 'written',
+            'break': 'broken',
+            'choose': 'chosen',
+            'forget': 'forgotten',
+            'get': 'gotten',
+            'hide': 'hidden',
+            'make': 'made',
+            'mean': 'meant',
+            'pay': 'paid',
+            'put': 'put',
+            'read': 'read',
+            'say': 'said',
+            'sell': 'sold',
+            'send': 'sent',
+            'sing': 'sung',
+            'sit': 'sat',
+            'tell': 'told',
+            'think': 'thought',
+            'clean': 'cleaned'
+        }
 
+    def get_past_participle(self, verb):
+        """Convert a verb to its past participle form"""
+        verb = verb.lower()
+        # Check irregular verbs first
+        if verb in self.irregular_verbs:
+            return self.irregular_verbs[verb]
 
-def active_to_passive(sentence: str) -> str:
-    """
-    Convert an active voice sentence to passive voice if found in dataset, otherwise, use algorithmic conversion.
+        # Handle regular verbs
+        if verb.endswith('e'):
+            return verb + 'd'
+        elif verb.endswith('y'):
+            if verb[-2] not in 'aeiou':
+                return verb[:-1] + 'ied'
+            else:
+                return verb + 'ed'
+        elif len(verb) > 2 and verb[-1] not in 'aeiou' and verb[-2] in 'aeiou' and verb[-3] not in 'aeiou':
+            return verb + verb[-1] + 'ed'
+        else:
+            return verb + 'ed'
 
-    Args:
-        sentence (str): Active voice sentence.
+    def should_use_are(self, noun_phrase):
+        """Determine if 'are' should be used instead of 'is'"""
+        # Check if the noun is plural
+        if self.inflect_engine.plural_noun(noun_phrase.split()[-1]):
+            return True
 
-    Returns:
-        str: Converted passive voice sentence or a message if conversion is not possible.
-    """
-    # Load dataset
-    file_path = os.path.join(os.path.dirname(
-        __file__), "active_to_passive_dataset.csv")
-    df = pd.read_csv(file_path)
+        # Handle uncountable nouns (like "software")
+        uncountable_nouns = {'software', 'information',
+                             'knowledge', 'research', 'equipment', 'furniture'}
+        if noun_phrase.split()[-1].lower() in uncountable_nouns:
+            return False
 
-    sentence = sentence.strip()
+        return False
 
-    # Check if the sentence exists in the dataset
-    match = df[df["input"].str.strip().str.lower() == sentence.lower()]
-    if not match.empty:
-        passive_sentence = match["output"].values[0].replace("Passive: ", "")
-        if passive_sentence.lower() == sentence.lower():
-            return "Could not convert to passive voice."
-        return passive_sentence
+    def convert_question(self, question):
+        """
+        Convert a question from active to passive voice.
 
-    # Handle cases that cannot be converted to passive voice
-    if re.match(r'^(Are|Am|Is)\\s+', sentence, re.IGNORECASE):
-        return "Could not convert to passive voice."
+        Args:
+            question (str): Input question in active voice
 
-    if re.match(r'^(She|He|They|We|I)\\s+(has|have|is|are|was|were)\\s+\\w+', sentence, re.IGNORECASE):
-        return "Could not convert to passive voice."
+        Returns:
+            str: Converted question in passive voice
+        """
+        # Parse the question
+        doc = self.nlp(question)
 
-    if re.match(r'^(This|That|It)\\s+is\\s+\\w+', sentence, re.IGNORECASE):
-        return "Could not convert to passive voice."
+        # Extract components
+        words = [token.text for token in doc]
+        first_word = words[0].lower()
 
-    # Handle exceptional case where verb is 'related'
-    if re.match(r'^Are more people today related to (.+?) than (.+?)\\?$', sentence, re.IGNORECASE):
-        return "Could not convert to passive voice."
+        # Find the main verb and object
+        root_verb = None
+        subject = None
+        obj = None
+        determiners = []
 
-    # Match question structure
-    question_match = re.match(
-        r'^(Will|Do|Does|Did|Could|Can|Might|Should|Would|Must|Shall|Has|Have|Had|Where|When|Why|How)\\s+(.*?)\\s+(\\w+)\\s+(.*?)\\?$', sentence, re.IGNORECASE)
+        for token in doc:
+            if token.dep_ == "ROOT" and not root_verb:
+                root_verb = token
+            if token.dep_ == "nsubj" and not subject:
+                subject = token
+            if token.dep_ == "dobj" and not obj:
+                obj = token
+            if token.dep_ == "det" and token.head == obj:
+                determiners.append(token)
 
-    if question_match:
-        aux, subject, verb, obj = question_match.groups()
+        # Handle cases where parsing might have failed
+        if not all([root_verb, subject, obj]):
+            return question
 
-        # Ensure correct verb transformation
-        if verb.endswith("s"):
-            verb = verb[:-1]
-        past_participle = get_past_participle(verb)
+        # Preserve determiners (like "the") with the object
+        obj_phrase = obj.text
+        if determiners:
+            obj_phrase = f"{determiners[0].text} {obj_phrase}"
 
-        # Adjust subject pronouns
-        subject_map = {"I": "me", "he": "him",
-                       "she": "her", "they": "them", "we": "us"}
-        subject = subject_map.get(subject.lower(), subject)
+        # Get the correct form of "be" based on the original auxiliary
+        new_aux = self.aux_mapping.get(first_word, 'is')
 
-        # Handle auxiliary verb agreement for different tenses
-        aux_map = {"do": "is", "does": "is", "did": "was", "has": "has been", "have": "have been", "had": "had been", "will": "will be",
-                   "can": "can be", "could": "could be", "might": "might be", "should": "should be", "must": "must be", "shall": "shall be"}
-        aux = aux_map.get(aux.lower(), aux)
+        # Handle "is" vs "are"
+        if new_aux == 'is' and self.should_use_are(obj_phrase):
+            new_aux = 'are'
+        elif new_aux == 'was' and self.should_use_are(obj_phrase):
+            new_aux = 'were'
 
-        # Identify and preserve time indicators
-        time_indicators = ["today", "yesterday", "tomorrow", "soon",
-                           "now", "next week", "last year", "earlier", "later", "by"]
-        obj_tokens = obj.split()
-        time_words = [word for word in obj_tokens if word.lower()
-                      in time_indicators]
-        obj = " ".join(
-            [word for word in obj_tokens if word.lower() not in time_indicators])
+        # Get past participle of the main verb
+        past_participle = self.get_past_participle(root_verb.text)
 
-        # Construct passive sentence
-        passive_sentence = f"{aux} {obj} be {past_participle} by {subject}"
+        # Convert pronouns if necessary
+        subject_phrase = subject.text
+        if subject_phrase.lower() in ['i', 'you', 'he', 'she', 'we', 'they']:
+            pronoun_map = {
+                'i': 'me', 'you': 'you', 'he': 'him', 'she': 'her',
+                'we': 'us', 'they': 'them'
+            }
+            subject_phrase = pronoun_map.get(
+                subject_phrase.lower(), subject_phrase)
 
-        # Ensure only one occurrence of time indicators, placed at the end
-        if time_words:
-            passive_sentence += " " + " ".join(time_words[-1:])
+        # Extract any additional context (time, place, manner, etc.) after the object
+        additional_context = ' '.join(words[words.index(
+            obj.text) + 1:-1]) if words.index(obj.text) < len(words) - 1 else ''
 
-        passive_sentence += "?"
-        if passive_sentence.lower() == sentence.lower():
-            return "Could not convert to passive voice."
-        return passive_sentence.capitalize()
+        # Reconstruct the question
+        if additional_context:
+            passive = f"{new_aux} {obj_phrase} {past_participle} by {subject_phrase} {additional_context}?"
+        else:
+            passive = f"{new_aux} {obj_phrase} {past_participle} by {subject_phrase}?"
 
-    return "Could not convert to passive voice."
+        # Capitalize first letter
+        return passive[0].upper() + passive[1:]
 
 
 def get_synonym(word, pos):
@@ -184,229 +226,190 @@ class Perturbation:
         self.dictionary = PyDictionary()
         self.nlp.add_pipe("coreferee")
 
-    def robust(self, text):
+        # Initialize verb processor
+        self.question_converter = QuestionConverter()
+
+        # Initialize time indicators
+        self.time_indicators = {
+            "today", "yesterday", "tomorrow", "soon", "now",
+            "next week", "last year", "earlier", "later", "by",
+            "this morning", "this evening", "tonight", "last night"
+        }
+
+        # Try to load dataset if available
+        self.dataset = None
+        dataset_path = os.path.join(os.path.dirname(
+            __file__), "active_to_passive_dataset.csv")
+        if os.path.exists(dataset_path):
+            try:
+                self.dataset = pd.read_csv(dataset_path)
+            except Exception as e:
+                print(f"Warning: Could not load dataset: {e}")
+
+    def robust(self, text, num):
         """
-        Swap one random character with its neighbor in each word only once.
-        Prevents swapping punctuation such as ','.
-        Return a list of sentences where each word is swapped randomly once.
+        Create multiple sentences where each sentence has exactly one different word perturbed.
+
+        Args:
+            text: The input text to modify
+            num: Percentage (1-100) of words to apply swapping to
+
+        Returns:
+            A list of sentences where each sentence has one different word with character swaps
         """
         words = text.split()  # Split the text into words
         perturbed_sentences = []  # List to store sentences with perturbed words
 
-        for word_index, word in enumerate(words):
-            if len(word) < 2:
-                continue  # Skip words too short to swap
+        # Find eligible words (words with length >= 2)
+        eligible_words = [i for i, word in enumerate(
+            words) if len(word.rstrip(string.punctuation)) >= 2]
 
-            # Ensure the word does not end with punctuation (e.g., ',')
+        if not eligible_words:
+            return [text]  # Return original text if no eligible words
+
+        # Calculate how many words to swap based on percentage
+        num = max(1, min(100, num))  # Ensure num is between 1 and 100
+        words_to_swap = math.ceil(len(eligible_words) * (num / 100.0))
+        # Can't swap more than available words
+        words_to_swap = min(words_to_swap, len(eligible_words))
+
+        # Randomly select which words to swap
+        words_indices_to_swap = random.sample(eligible_words, words_to_swap)
+
+        # For each selected word index, create a separate sentence with only that word perturbed
+        for word_index in words_indices_to_swap:
+            # Create a copy of the original words for this perturbation
+            modified_words = words.copy()
+
+            word = words[word_index]
+
+            # Check for punctuation at the end
             if word[-1] in string.punctuation:
-                core_word = word[:-1]  # Exclude the punctuation
+                core_word = word[:-1]
                 punctuation = word[-1]
             else:
                 core_word = word
                 punctuation = ''
 
-            # Choose a random index to swap characters in the core word
-            swap_index = random.randint(0, len(core_word) - 2)
-            perturbed_word = (
-                core_word[:swap_index] +
-                core_word[swap_index + 1] +
-                core_word[swap_index] +
-                core_word[swap_index + 2:]
-            )
+            # Only swap if the core word is at least 2 characters
+            if len(core_word) >= 2:
+                # Choose a random index to swap characters
+                swap_index = random.randint(0, len(core_word) - 2)
 
-            # Reattach punctuation if it exists
-            perturbed_word += punctuation
+                # Swap characters
+                perturbed_word = (
+                    core_word[:swap_index] +
+                    core_word[swap_index + 1] +
+                    core_word[swap_index] +
+                    core_word[swap_index + 2:]
+                )
 
-            # Create a new sentence with the perturbed word
-            new_sentence = words[:word_index] + \
-                [perturbed_word] + words[word_index + 1:]
-            perturbed_sentences.append(' '.join(new_sentence))
+                # Reattach punctuation
+                perturbed_word += punctuation
+
+                # Replace the word in our copy
+                modified_words[word_index] = perturbed_word
+
+            # Create a new sentence with the one modified word
+            perturbed_sentence = ' '.join(modified_words)
+            perturbed_sentences.append(perturbed_sentence)
 
         return perturbed_sentences
 
-    # def robust(self, text):
-    #     """
-    #     Swap one random character with its neighbor in each word only once.
-    #     Return a list of sentences where each word is swapped randomly once.
-    #     """
-    #     words = text.split()  # Split the text into words
-    #     perturbed_sentences = []  # List to store sentences with perturbed words
-
-    #     for word_index, word in enumerate(words):
-    #         if len(word) < 2:
-    #             continue  # Skip words too short to swap
-
-    #         # Choose a random index to swap characters in the word
-    #         swap_index = random.randint(0, len(word) - 2)
-    #         perturbed_word = (
-    #             word[:swap_index] +
-    #             word[swap_index + 1] +
-    #             word[swap_index] +
-    #             word[swap_index + 2:]
-    #         )
-
-    #         # Create a new sentence with the perturbed word
-    #         new_sentence = words[:word_index] + [perturbed_word] + words[word_index + 1:]
-    #         perturbed_sentences.append(' '.join(new_sentence))
-
-    #     return perturbed_sentences
-
-    def process_questions(self, df, question_column, expected_answer_column):
+    def process_questions(self, df, question_column, expected_answer_column, num):
         """
         Processes the dataset, applies perturbations to each question, and matches with the expected answers.
+        Fixed to handle non-string data types.
 
         Args:
             df (pd.DataFrame): Input dataframe with columns containing questions and expected answers.
             question_column (str): Column name containing the questions.
             expected_answer_column (str): Column name containing the expected answers.
+            num (int): Percentage (1-100) of words to apply swapping to
 
         Returns:
             pd.DataFrame: A new dataframe with the original question, perturbations, and expected answers.
         """
+        import pandas as pd
+        import logging
+
         # Initialize lists to store results
         rows = []
 
+        # First, ensure the columns exist
+        if question_column not in df.columns or expected_answer_column not in df.columns:
+            raise ValueError(
+                f"Required columns missing: {question_column} or {expected_answer_column}")
+
         for index, row in df.iterrows():
-            question = row[question_column]
-            expected_answer = row[expected_answer_column]
+            # Convert to string to handle non-string types (like float)
+            try:
+                question = str(row[question_column])
+                expected_answer = str(row[expected_answer_column])
 
-            # Generate perturbations using the robust method
-            perturbed_set = self.robust(question)
+                # Skip empty questions
+                if not question or question.lower() == 'nan':
+                    logging.warning(f"Skipping row {index}: Empty question")
+                    continue
 
-            # Add each perturbation as a new row in the output
-            for i, perturbation in enumerate(perturbed_set, start=1):
-                rows.append({
-                    "Original_Question_Index": index,
-                    "Original_Question": question,
-                    # Ensure unique naming
-                    "Perturbation": f"Perturb {index}-{i}",
-                    "Perturbed_Question": perturbation,
-                    "Expected_Answer": expected_answer
-                })
+                # Generate perturbations using the robust method
+                perturbed_set = self.robust(question, num)
+
+                # Add each perturbation as a new row in the output
+                for i, perturbation in enumerate(perturbed_set, start=1):
+                    rows.append({
+                        "Original_Question_Index": index,
+                        "Original_Question": question,
+                        # Ensure unique naming
+                        "Perturbation": f"Perturb {index}-{i}",
+                        "Perturbed_Question": perturbation,
+                        "Expected_Answer": expected_answer
+                    })
+            except Exception as e:
+                logging.error(f"Error processing row {index}: {e}")
+                # Continue with other rows instead of failing
+                continue
+
+        # If no rows were processed, raise an error
+        if not rows:
+            raise ValueError("No valid questions found in the dataset")
 
         # Convert to DataFrame
         result_df = pd.DataFrame(rows)
         return result_df
 
-    # def get_synonym(self, word, pos_tag):
-    #     """
-    #     Retrieve a synonym for the given word and part-of-speech (POS) tag.
-    #     If no synonym is found, return the original word.
-    #     """
-    #     pos_map = {
-    #         'JJ': wordnet.ADJ,    # Adjectives
-    #         'JJR': wordnet.ADJ,
-    #         'JJS': wordnet.ADJ,
-    #         'RB': wordnet.ADV,    # Adverbs
-    #         'RBR': wordnet.ADV,
-    #         'RBS': wordnet.ADV,
-    #         'VB': wordnet.VERB,   # Verbs
-    #         'VBD': wordnet.VERB,
-    #         'VBG': wordnet.VERB,
-    #         'VBN': wordnet.VERB,
-    #         'VBP': wordnet.VERB,
-    #         'VBZ': wordnet.VERB,
-    #         'NN': wordnet.NOUN,   # Nouns
-    #         'NNS': wordnet.NOUN,
-    #         'NNP': wordnet.NOUN,
-    #         'NNPS': wordnet.NOUN,
-    #     }
-
-    #     wn_pos = pos_map.get(pos_tag, wordnet.NOUN)  # Default to NOUN if not found
-
-    #     synonyms = wordnet.synsets(word, pos=wn_pos)
-    #     if not synonyms:
-    #         return word
-
-    #     synonym_words = set(
-    #         lemma.name().replace('_', ' ') for synset in synonyms for lemma in synset.lemmas()
-    #         if lemma.name().lower() != word.lower()
-    #     )
-    #     return random.choice(list(synonym_words)) if synonym_words else word
-
-    # def taxonomy(self, sentence):
-    #     tokens = word_tokenize(sentence)
-    #     tagged = pos_tag(tokens)
-
-    #     # Replace adjectives or adverbs with synonyms
-    #     new_tokens = [
-    #         self.get_synonym(word, tag) if tag in ['JJ', 'JJR', 'JJS', 'RB', 'RBR', 'RBS'] else word
-    #         for word, tag in tagged
-    #     ]
-
-    #     new_sentence = ' '.join(new_tokens)
-    #     return new_sentence
-
     def taxonomy(self, sentence):
-        """Replaces words in a sentence with their synonyms (if available)."""
+        """Replaces exactly one word in a sentence with its synonym (if available)."""
         # Tokenize and tag the sentence
         tokens = word_tokenize(sentence)
         tagged = pos_tag(tokens)
 
-        new_tokens = []
-        modified = False
+        # Filter for words that might have synonyms (excluding stopwords, punctuation, etc.)
+        eligible_words = []
+        for i, (word, tag) in enumerate(tagged):
+            # Check if the word is long enough and has a valid POS tag for synonym replacement
+            if len(word) > 3 and tag in ['NN', 'NNS', 'NNP', 'NNPS', 'VB', 'VBD', 'VBG',
+                                         'VBN', 'VBP', 'VBZ', 'JJ', 'JJR', 'JJS', 'RB', 'RBR', 'RBS']:
+                eligible_words.append(i)
 
-        # Iterate over each word and attempt to replace it with a synonym
-        for word, tag in tagged:
-            synonym = get_synonym(word, tag)  # Fetch a synonym
-            if synonym != word:  # If a replacement occurred
-                modified = True
-            new_tokens.append(synonym)
+        # If no eligible words found, return the original sentence
+        if not eligible_words:
+            return sentence
 
-        # Reconstruct the sentence
-        new_sentence = ' '.join(new_tokens)
+        # Randomly select one word to replace
+        word_index = random.choice(eligible_words)
+        word, tag = tagged[word_index]
 
-    # def negation(self, text):
-    #     """
-    #     Replaces occurrences of "n't" or "not" with their antonym transformations.
-    #     For example:
-    #     - Input: "The food is not bad"
-    #     - Output: "The food is good"
-    #     """
-    #     def antonyms_for(word):
-    #         """
-    #         Find antonyms for a given word across all parts of speech.
+        # Get synonym for the selected word
+        synonym = get_synonym(word, tag)
 
-    #         :param word: The word for which to find antonyms.
-    #         :return: A set of antonyms for the given word.
-    #         """
-    #         antonyms = set()
-    #         for ss in wn.synsets(word):
-    #             for lemma in ss.lemmas():
-    #                 for antonym in lemma.antonyms():
-    #                     antonyms.add(antonym.name())
-    #         return antonyms
+        # Replace only if a different synonym was found
+        if synonym != word:
+            tokens[word_index] = synonym
 
-    #     # Tokenize the text
-    #     tokens = word_tokenize(text)
-    #     tagged = pos_tag(tokens)  # POS tagging for identifying parts of speech
-
-    #     # Process tokens to handle "not" or "n't"
-    #     result = []
-    #     skip_next = False  # To handle the word after "not" or "n't"
-
-    #     for i, (word, tag) in enumerate(tagged):
-    #         if skip_next:  # Skip the next word after processing "not" or "n't"
-    #             skip_next = False
-    #             continue
-
-    #         if word.lower() in ["not", "n't"]:  # Handle negations
-    #             # Find antonyms for the word after "not" or "n't"
-    #             if i + 1 < len(tagged):  # Check if there is a next word
-    #                 next_word, next_tag = tagged[i + 1]
-    #                 antonyms = antonyms_for(next_word)
-    #                 if antonyms:  # Use the first antonym found
-    #                     result.append(list(antonyms)[0])
-    #                 else:  # If no antonym is found, keep the original word
-    #                     result.append(next_word)
-    #                 skip_next = True  # Skip the next word as it's already processed
-    #         else:
-    #             result.append(word)
-
-    #     # Join tokens and fix spaces before punctuation
-    #     transformed_text = " ".join(result)
-    #     transformed_text = re.sub(r'\s+([?.!,"])', r'\1', transformed_text)  # Fix spaces before punctuation
-    #     return transformed_text
+        # Reconstruct the sentence with the single word replaced
+        new_sentence = ' '.join(tokens)
+        return new_sentence
 
     def negation(self, text):
         """
@@ -519,34 +522,23 @@ class Perturbation:
             print(f"Coreference resolution error: {e}")
             return text
 
-    def srl(self, sentence):
+    def srl(self, sentence: str) -> str:
         """
-        Performs SRL (Semantic Role Labeling) on the input sentence and converts active to passive.
+        Performs SRL perturbation by converting active voice to passive voice.
+
+        Args:
+            sentence (str): Input sentence to perturb.
+
+        Returns:
+            str: Perturbed sentence in passive voice if conversion is possible.
         """
-        passive_sentence = active_to_passive(sentence)
-        return passive_sentence
+        passive_sentence = self.question_converter.convert_question(sentence)
 
-    # def srl(self, sentence):
-    #     """
-    #     Converts active sentences to passive for questions and retains non-questions as is.
+        # If conversion fails, return a fallback message
+        if passive_sentence.lower() == sentence.lower():
+            return "Could not convert to passive voice."
 
-    #     Args:
-    #         sentence (str): Input sentence.
-
-    #     Returns:
-    #         str: Converted sentence in passive voice (if a question) or unchanged.
-    #     """
-    #     # Check if the sentence ends with a question mark
-    #     if sentence.strip().endswith('?'):
-    #         # Convert the active voice question to passive
-    #         passive_sentence = active_to_passive(sentence)
-    #         if not passive_sentence.strip().endswith('?'):
-    #             # Ensure the passive sentence still ends with a question mark
-    #             passive_sentence = passive_sentence.strip() + '?'
-    #         return passive_sentence
-        # else:
-        #     # Return the sentence unchanged if it's not a question
-        #     return sentence
+        return passive_sentence.capitalize()
 
     def logic(self, sentence):
         """
@@ -570,49 +562,6 @@ class Perturbation:
 
         # If no 'if...then...' is found, return the original sentence with a note
         return "No 'if...then...' structure found in the sentence."
-
-    # def fairness(self, sentence):
-    #     """
-    #     Adds gender-specific words ('female' or 'male') to a sentence if no gender word is present.
-
-    #     Args:
-    #         sentence (str): Input sentence.
-
-    #     Returns:
-    #         str: Sentence with randomly added gender word if none is present.
-    #     """
-    #     # Define gender-specific words to check
-    #     gender_words = {"female", "male", "woman", "man", "girl", "boy", "she", "he", "her", "his"}
-    #     tokens = word_tokenize(sentence.lower())
-
-    #     # Check if the sentence already contains a gender word
-    #     if any(word in tokens for word in gender_words):
-    #         return sentence  # Return original sentence if gender word exists
-
-    #     # Randomly select 'female' or 'male'
-    #     gender_word = random.choice(["female", "male"])
-
-    #     # Tokenize and tag parts of speech
-    #     tagged = pos_tag(word_tokenize(sentence))
-
-    #     # Identify where to insert the gender word
-    #     new_tokens = []
-    #     inserted = False
-    #     for word, tag in tagged:
-    #         # Insert gender word before a noun (NN, NNP, etc.)
-    #         if not inserted and tag in {"NN", "NNP", "NNS", "NNPS"}:
-    #             new_tokens.append(gender_word)
-    #             inserted = True
-    #         new_tokens.append(word)
-
-    #     # If no noun is found, append the gender word to the start
-    #     if not inserted:
-    #         new_tokens.insert(0, gender_word)
-
-    #     # Join tokens and return the updated sentence
-    #     updated_sentence = " ".join(new_tokens)
-    #     updated_sentence = re.sub(r'\s+([?.!,"])', r'\1', updated_sentence)  # Fix spaces before punctuation
-    #     return updated_sentence
 
     def fairness(self, sentence):
         """
@@ -751,11 +700,11 @@ class Perturbation:
 
         # Construct the transformed sentence
 
-        past_phrase = f"{subject} was not like this"
+        past_phrase = f"Not sure how it was like before"
         # past_phrase = f"{subject} used to be {antonym}" if antonym else f"{subject} was not {sentiment_word}"
         # else:
 
-        transformed_sentence = f"{past_phrase}, but now {sentence}"
+        transformed_sentence = f"{past_phrase} but {sentence}."
         return transformed_sentence.capitalize()
 
     def ner(self, sentence):
@@ -815,24 +764,61 @@ class Perturbation:
         return word, pos_tag
 
     def vocab(self, sentence):
+        """
+        Insert an adjective or adverb into a sentence at an appropriate position,
+        but not at the beginning of the sentence.
+        Removes underscores from words before insertion.
+        """
         tokens = word_tokenize(sentence)
         word, pos_tag = self.get_random_adjective_or_adverb()
 
         if not word:
             return sentence  # Return original sentence if no word was found
 
-        if pos_tag == 'JJ':
-            tagged = nltk.pos_tag(tokens)
-            for i, (token, tag) in enumerate(tagged):
+        # Remove underscores from the word if present
+        word = word.replace('_', ' ')
+
+        tagged = nltk.pos_tag(tokens)
+
+        # Skip the first token to avoid adding at the beginning
+        insertion_made = False
+
+        if pos_tag == 'JJ':  # If we have an adjective
+            # Start from the second token (index 1)
+            for i in range(1, len(tagged)):
+                token, tag = tagged[i]
+                # Insert before nouns
                 if tag in ['NN', 'NNS', 'NNP', 'NNPS']:
                     tokens.insert(i, word)
-                    break
-        elif pos_tag == 'RB':
-            tagged = nltk.pos_tag(tokens)
-            for i, (token, tag) in enumerate(tagged):
-                if tag in ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']:
-                    tokens.insert(i + 1, word)
+                    insertion_made = True
                     break
 
+        elif pos_tag == 'RB':  # If we have an adverb
+            # Start from the second token (index 1)
+            for i in range(1, len(tagged)):
+                token, tag = tagged[i]
+                # Insert after verbs
+                if tag in ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']:
+                    tokens.insert(i + 1, word)
+                    insertion_made = True
+                    break
+
+        # If no appropriate position was found in the middle, append to the end
+        # but before any final punctuation
+        if not insertion_made:
+            if tokens[-1] in '.!?':
+                tokens.insert(len(tokens) - 1, word)
+            else:
+                tokens.append(word)
+
+        # Join tokens and clean up any double spaces that might have been created
         new_sentence = ' '.join(tokens)
+        new_sentence = ' '.join(new_sentence.split())
+
+        # Make sure there's a space before punctuation
+        for punct in '.!?,:;':
+            new_sentence = new_sentence.replace(' ' + punct, punct)
+            new_sentence = new_sentence.replace(
+                punct + ' ' + punct, punct + punct)
+
         return new_sentence

@@ -1,4 +1,4 @@
-import { TabMenuProps } from '../../types';
+import { TabMenuProps } from '@/app/types';
 import styles from './TabMenu.module.css';
 
 const TabMenu = ({ activeTab, onTabClick, tabs }: TabMenuProps) => {

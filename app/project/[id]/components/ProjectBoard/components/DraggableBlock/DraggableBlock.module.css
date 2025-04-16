@@ -1,0 +1,102 @@
+.blockContainer {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    max-width: 230px;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.evaluationContainer {
+    background-color: #FAFAFC;
+    border: 1px solid #E5E7EB;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.topicContainer {
+    text-align: center;
+    background-color: white;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.dashboardContainer {
+    text-align: center;
+    background-color: #BA5CDB;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.outputContainer {
+    background-color: white;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.uploadBlock {
+    background-color: white;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.testCaseBlock {
+    background: white;
+    border: 1px solid #e5e7eb;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Responsive styles */
+@media (max-width: 1440px) {
+    .blockContainer {
+        min-width: 240px;
+    }
+}
+
+/* Common desktop (1536px) */
+@media (min-width: 1536px) {
+    .blockContainer {
+        max-width: 250px;
+        margin-bottom: 15px;
+    }
+}
+
+/* Large desktop (1680px) */
+@media (min-width: 1680px) {
+    .blockContainer {
+        max-width: 270px;
+    }
+}
+
+/* Full HD (1920px) */
+@media (min-width: 1920px) {
+    .blockContainer {
+        max-width: 290px;
+    }
+}
+
+/* 2K/QHD (2560px) */
+@media (min-width: 2560px) {
+    .blockContainer {
+        max-width: 310px;
+    }
+}
+
+/* 4K/UHD (3840px) */
+@media (min-width: 3840px) {
+    .blockContainer {
+        max-width: 330px;
+    }
+}

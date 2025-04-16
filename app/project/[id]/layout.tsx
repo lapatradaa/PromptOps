@@ -1,3 +1,4 @@
+// @/app/project/[id]/layout.tsx
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import clientPromise from '@/lib/mongodb';

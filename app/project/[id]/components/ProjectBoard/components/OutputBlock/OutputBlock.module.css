@@ -1,0 +1,89 @@
+.fileList {
+  padding: 0.3rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 15px;
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+  transition: background-color 0.2s;
+  flex-wrap: wrap;
+}
+
+.fileItem:hover {
+  background-color: #f7f7fa;
+}
+
+.fileName {
+  font-size: 14px;
+  color: #666;
+  font-weight: 400;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+  padding-right: 10px;
+}
+
+.fileDownload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.fileDownload:hover {
+  color: #42A7F1;
+}
+
+.fileDownload:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.noResults {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+  max-width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  justify-items: center;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.downloadSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(66, 167, 241, 0.2);
+  border-top-color: #42A7F1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: flex;
+  justify-content: center;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

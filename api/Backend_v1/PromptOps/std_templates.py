@@ -1,6 +1,6 @@
 import pandas as pd
 import pickle
-from .perturb import Perturbation
+from ..PromptOps.perturb import Perturbation
 
 
 class ShotTemplateFormatter:
@@ -40,6 +40,7 @@ class ShotTemplateFormatter:
         """
         Apply perturbation to the question based on the perturbation type.
         """
+        perturb_type = perturb_type.lower().strip()
         if perturb_type == 'taxonomy':
             return self.perturb.taxonomy(question)
         elif perturb_type == 'negation':
@@ -68,8 +69,10 @@ class ShotTemplateFormatter:
         """
 
         if perturb_type == 'robust':
-            original = f"Q: {row['Original_Question']}\nA:"
-            perturbed = f"Q: {row['Perturbed_Question']}\nA:"
+            # original = f"Q: {row['Original_Question']}\nA:"
+            # perturbed = f"Q: {row['Perturbed_Question']}\nA:"
+            original = f"{row['Prefix']}\n{row['Original_Question']}"
+            perturbed = f"{row['Prefix']}\n{row['Perturbed_Question']}"
             return {
                 "Original_Question_Index": row['Original_Question_Index'],
                 "original_prompt": original,
@@ -82,8 +85,12 @@ class ShotTemplateFormatter:
             question = row['Question']
             if perturb_type:
                 question = self.perturb_question(question, perturb_type)
-            original = f"Q: {row['Question']}\nA:"
-            perturbed = f"Q: {question}\nA:"
+            elif 'Perturbed' in row and row['Perturbed']:
+                question = row['Perturbed']
+            # original = f"Q: {row['Question']}\nA:"
+            # perturbed = f"Q: {question}\nA:"
+            original = f"{row['Prefix']}\n{row['Question']}"
+            perturbed = f"{row['Prefix']}\n{question}"
             return {
                 "original_prompt": original,
                 "perturb_prompt": perturbed,
@@ -96,8 +103,10 @@ class ShotTemplateFormatter:
         Format one-shot template with optional perturbation for the main question.
         """
         if perturb_type == 'robust':
-            original = f"Q: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {row['Original_Question']}\nA:"
-            perturbed = f"Q: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {row['Perturbed_Question']}\nA:"
+            # original = f"Q: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {row['Original_Question']}\nA:"
+            # perturbed = f"Q: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {row['Perturbed_Question']}\nA:"
+            original = f"{row['Prefix']}\n{row['Original_Question']}"
+            perturbed = f"{row['Prefix']}\n{row['Perturbed_Question']}"
             return {
                 "Original_Question_Index": row['Original_Question_Index'],
                 "original_prompt": original,
@@ -110,8 +119,12 @@ class ShotTemplateFormatter:
             question = row['Question']
             if perturb_type:
                 question = self.perturb_question(question, perturb_type)
-            original = f"Q: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {row['Question']}\nA:"
-            perturbed = f"Q: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {question}\nA:"
+            # original = f"Q: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {row['Question']}\nA:"
+            # perturbed = f"Q: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {question}\nA:"
+
+            original = f"{row['Prefix']}\n{row['Question']}"
+            perturbed = f"{row['Prefix']}\n{question}"
+
             return {
                 "original_prompt": original,
                 "perturb_prompt": perturbed,
@@ -126,13 +139,15 @@ class ShotTemplateFormatter:
 
         if perturb_type == 'robust':
             question = row['Perturbed_Question']
-            few_shot_context = ""
-            for i in range(1, len(row)//2):  # Assuming paired Question_X and Answer_X columns
-                if f'Question_{i}' in row and f'Answer_{i}' in row:
-                    few_shot_context += f"Q: {row[f'Question_{i}']}\nA: {row[f'Answer_{i}']}\n\n"
+            # few_shot_context = ""
+            # for i in range(1, len(row)//2):  # Assuming paired Question_X and Answer_X columns
+            #     if f'Question_{i}' in row and f'Answer_{i}' in row:
+            #         few_shot_context += f"Q: {row[f'Question_{i}']}\nA: {row[f'Answer_{i}']}\n\n"
 
-            original = f"{few_shot_context}Q: {row['Original_Question']}\nA:"
-            perturbed = f"{few_shot_context}Q: {question}\nA:"
+            # original = f"{few_shot_context}Q: {row['Original_Question']}\nA:"
+            # perturbed = f"{few_shot_context}Q: {question}\nA:"
+            original = f"{row['Prefix']}\n{row['Original_Question']}"
+            perturbed = f"{row['Prefix']}\n{row['Perturbed_Question']}"
             return {
                 "Original_Question_Index": row['Original_Question_Index'],
                 "original_prompt": original,
@@ -146,13 +161,15 @@ class ShotTemplateFormatter:
             if perturb_type:
                 question = self.perturb_question(question, perturb_type)
 
-            few_shot_context = ""
-            for i in range(1, len(row)//2):  # Assuming paired Question_X and Answer_X columns
-                if f'Question_{i}' in row and f'Answer_{i}' in row:
-                    few_shot_context += f"Q: {row[f'Question_{i}']}\nA: {row[f'Answer_{i}']}\n\n"
+            # few_shot_context = ""
+            # for i in range(1, len(row)//2):  # Assuming paired Question_X and Answer_X columns
+            #     if f'Question_{i}' in row and f'Answer_{i}' in row:
+            #         few_shot_context += f"Q: {row[f'Question_{i}']}\nA: {row[f'Answer_{i}']}\n\n"
 
-            original = f"{few_shot_context}Q: {row['Original_Question']}\nA:"
-            perturbed = f"{few_shot_context}Q: {question}\nA:"
+            # original = f"{few_shot_context}Q: {row['Original_Question']}\nA:"
+            # perturbed = f"{few_shot_context}Q: {question}\nA:"
+            original = f"{row['Prefix']}\n{row['Question']}"
+            perturbed = f"{row['Prefix']}\n{question}"
             return {
                 "original_prompt": original,
                 "perturb_prompt": perturbed,

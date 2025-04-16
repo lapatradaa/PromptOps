@@ -1,0 +1,105 @@
+.inputFormatContainer {
+    padding: 20px;
+    width: 100%;
+}
+
+.formatTitle {
+    font-size: 22px;
+    font-weight: 600;
+    color: #403B61;
+    margin-bottom: 3rem;
+}
+
+.templateTypes {
+    display: flex;
+    gap: 1rem;
+}
+
+.templateTypeButton {
+    padding: 0.75rem 1.5rem;
+    background-color: #D7D4E8;
+    color: white;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    cursor: pointer;
+    font-weight: 500;
+    max-width: 200px;
+}
+
+.activeTemplateType {
+    background-color: white;
+    color: #9F19CC;
+}
+
+.templatesGrid {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.templateRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+/* Remove bottom border from last row */
+.templateRow:last-child {
+    border-bottom: none;
+}
+
+.formatInfo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-weight: 500;
+}
+
+.fileIcon {
+    display: flex;
+    align-items: center;
+}
+
+.downloadOptions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.downloadButton {
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.5rem;
+    background-color: #E5C3F0;
+    color: #9F19CC;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.downloadButton:last-child {
+    background-color: #E5C3F0;
+    color: #9F19CC;
+}
+
+.downloadButton:hover {
+    opacity: 0.9;
+}

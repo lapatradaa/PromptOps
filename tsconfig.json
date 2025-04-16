@@ -8,7 +8,9 @@
     ],
     "allowJs": true,
     "types": [
-      "next-auth"
+      "next-auth",
+      "jest",
+      "node"
     ],
     "skipLibCheck": true,
     "strict": true,
@@ -40,8 +42,11 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
-, "scripts/test-mongodb.js"  ],
+    ".next/types/**/*.ts",
+    "scripts/test-mongodb.js",
+    "app/project/[id]/components/Dashboard/utils/dataHelpers.tsx",
+    "app/project/[id]/components/Dashboard/utils/hooks.tsx"
+  ],
   "exclude": [
     "node_modules"
   ]

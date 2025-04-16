@@ -1,231 +1,229 @@
+# api/Backend_v1/PromptOps/test.py
+
+from functools import wraps
+import json
+import random
+import socket
+import logging
+import time
+import litellm
 import openai
 import anthropic
 import google.generativeai as genai
-# from utils import set_openai_api_key, set_gemini_api_key
 from sentence_transformers import SentenceTransformer
-# Import your perturbation functions from perturb.py
-from .perturb import Perturbation
+from api.utils.abort_handler import check_abort
 import requests
-import spacy
 import numpy as np
-# Initialize the sentence transformer model for similarity evaluation
-similarity_model = SentenceTransformer("all-mpnet-base-v2")
-url = "http://127.0.0.1:8000/v1/chat/completions"
+import threading
+
+logger = logging.getLogger(__name__)
+similarity_model = SentenceTransformer("all-distilroberta-v1")
+
+# Global thread-safe provider request tracking
+provider_locks = {
+    'openai': threading.RLock(),
+    'claude': threading.RLock(),
+    'gemini': threading.RLock(),
+    'lm_studio': threading.RLock(),
+    'custom': threading.RLock(),
+    'typhoon': threading.RLock(),
+}
+
+# Max pending requests before queuing
+MAX_CONCURRENT_PER_PROVIDER = {
+    'openai': 3,
+    'claude': 2,
+    'gemini': 3,
+    'lm_studio': 5,
+    'custom': 5,
+    'typhoon': 3
+}
+
+# Track concurrent requests per provider
+active_requests = {
+    provider: 0 for provider in provider_locks
+}
+
+
+def robust_llm_retry(max_retries=5, initial_backoff=3.0, max_backoff=90.0):
+    """
+    Decorator providing robust retry logic for LLM API calls.
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            last_exception = None
+            backoff = initial_backoff
+
+            # Preserve the original provider for callbacks
+            provider = kwargs.get('provider', None)
+            if not provider and args and hasattr(args[0], 'model_provider'):
+                provider = args[0].model_provider
+
+            for attempt in range(max_retries):
+                try:
+                    old_timeout = socket.getdefaulttimeout()
+                    socket.setdefaulttimeout(60)
+                    try:
+                        return func(*args, **kwargs)
+                    finally:
+                        socket.setdefaulttimeout(old_timeout)
+                except (requests.ConnectionError, requests.Timeout, socket.error, ConnectionRefusedError) as e:
+                    last_exception = e
+                    logger.warning(
+                        f"Connection error on attempt {attempt+1}/{max_retries}: {str(e)}. Retrying in {backoff:.1f}s...")
+                    time.sleep(backoff)
+                    backoff = min(backoff * 1.5 * (1 + 0.1 *
+                                  random.random()), max_backoff)
+                except litellm.exceptions.RateLimitError as e:
+                    last_exception = e
+                    logger.warning(
+                        f"Rate limit hit on attempt {attempt+1}: {str(e)}. Retrying in {backoff:.1f}s...")
+                    time.sleep(backoff)
+                    backoff = min(backoff * 2, max_backoff)
+                except Exception as e:
+                    last_exception = e
+                    if attempt < min(2, max_retries - 1):
+                        logger.warning(
+                            f"Error on attempt {attempt+1}: {str(e)}. Retrying in {backoff:.1f}s...")
+                        time.sleep(backoff)
+                        backoff = min(backoff * 2, max_backoff)
+                    else:
+                        logger.error(
+                            f"Error after {attempt+1} attempts: {str(e)}")
+                        raise
+            if isinstance(last_exception, (requests.ConnectionError, socket.error, ConnectionRefusedError)):
+                error_message = f"Cannot connect to LLM API after {max_retries} attempts. Please verify the service is running."
+                logger.error(error_message)
+                raise ConnectionError(error_message) from last_exception
+            raise last_exception
+        return wrapper
+    return decorator
 
 
 def evaluate_response(text1, text2, model):
     """
-    Evaluate the response using the SentenceTransformer model.
-
-    Parameters:
-    text1 (str): The first text to compare.
-    text2 (str): The second text to compare.
-    model (SentenceTransformer): The model to use for generating embeddings.
-
-    Returns:
-    float: The similarity score between the two texts.
+    Evaluate similarity between two texts.
     """
     emb_a = model.encode([text1])
     emb_b = model.encode([text2])
-    similarities = model.similarity(emb_a, emb_b)
+    similarities = np.dot(emb_a, emb_b.T) / \
+        (np.linalg.norm(emb_a) * np.linalg.norm(emb_b))
     return similarities.item()
 
 
 class PromptCompletion:
-    def __init__(self,
-                 model_provider="openai",  # Can be 'openai', 'gemini', 'claude', or 'llama'
-                 model="gpt-3.5-turbo",
-                 system_content="""You will act as a Question Answering model.""",
-                 temperature=0,
-                 top_p=0,
-                 max_tokens=100,
-                 api_key=None,
-                 stream=False,
-                 llama_url=url):
-        """
-        Initialize the PromptCompletion class with default parameters.
-
-        Parameters:
-        model_provider (str): The provider to use ('openai', 'gemini', 'claude', or 'llama').
-        model (str): The model to use for generating responses.
-        system_content (str): The system message that sets the context and format for the completions.
-        temperature (float): Sampling temperature for the model.
-        top_p (float): Nucleus sampling parameter.
-        max_tokens (int): Maximum number of tokens in the response.
-        api_key (str): The API key to use for the provider, if required.
-        stream (bool): Whether to stream responses (Llama only).
-        llama_url (str): The URL for the Llama model if using LMStudio.
-        """
-        self.model_provider = model_provider
+    def __init__(self, model_provider, model, system_content, url, temperature=0, top_p=0, max_tokens=100, api_key=None, stream=False):
+        self.model_provider = model_provider.lower()
         self.model = model
         self.system_content = system_content
         self.temperature = temperature
         self.top_p = top_p
         self.max_tokens = max_tokens
-        self.api_key = api_key
+        self.api_key = api_key or None
         self.stream = stream
-        self.llama_url = llama_url
+        self.url = url
 
+        # Configure litellm with appropriate API keys
+        self._configure_litellm()
+
+        # Log current rate limit status
+        self._log_rate_limit_status()
+
+    def _configure_litellm(self):
+        """Configure LiteLLM with the appropriate API keys and settings."""
         if self.model_provider == "openai":
-            # Set the OpenAI API key using the utility function
-            if api_key:
-                openai.api_key = self.api_key
-            else:
-                raise ValueError("OpenAI API key is required.")
-
+            litellm.api_key = self.api_key or "dummy_openai_api_key"
         elif self.model_provider == "claude":
-            if not api_key:
-                raise ValueError("Claude API key is required.")
-            self.client = anthropic.Anthropic(
-                api_key=api_key)  # Initialize the Claude client
-
+            litellm.api_key = self.api_key or "dummy_claude_api_key"
         elif self.model_provider == "gemini":
-            if not api_key:
-                raise ValueError("Gemini API key is required.")
-            # Configure the Gemini API with the provided key
-            genai.configure(api_key=api_key)
+            litellm.api_key = self.api_key or "dummy_gemini_api_key"
+        # elif self.model_provider == "lm_studio":
+        #     # For LM Studio, we do not use an API key.
+        #     # We also expect the user to specify the URL when constructing this object.
+        #     logger.info(
+        #         "LM Studio selected. Ensure that the URL is provided by the user.")
+        #     # Do not override or set litellm.api_key and do not set LM Studio base URL from env.
+        # elif self.model_provider == "typhoon":
+        #     # Custom configuration for Typhoon if needed.
+        #     pass
+        # elif self.model_provider == "custom":
+        #     pass
 
-            # # Configure generation settings for Gemini
-            # self.generation_config = {
-            #     "temperature": self.temperature,
-            #     "top_p": self.top_p,
-            #     "max_output_tokens": self.max_tokens,
-            #     "response_mime_type": "text/plain",
-            # }
-            # self.model_name = model  # Gemini model name (e.g., 'gemini-1.5-pro')
+    def _log_rate_limit_status(self):
+        """Log current rate limit status for this provider"""
+        try:
+            from api.utils.model_rate_limits import MODEL_RATE_LIMITS
 
-        elif self.model_provider == "llama":
-            # No special API key needed for llama, but make sure the Llama server is running.
-            if not llama_url:
-                raise ValueError("Llama URL is required.")
+            limits = MODEL_RATE_LIMITS.get(self.model_provider, {})
+            if isinstance(limits, dict):
+                model_limit = limits.get(self.model, limits.get("default", 15))
+            else:
+                model_limit = limits
 
-        else:
-            raise ValueError(f"Unknown model provider: {self.model_provider}")
+            logger.info(f"{self.model_provider} rate limit: {model_limit} RPM")
+        except Exception as e:
+            logger.warning(f"Error logging rate limit status: {e}")
 
+    def _get_litellm_model_name(self):
+        """Convert our model names to litellm format."""
+        if self.model_provider == "openai":
+            return f"openai/{self.model}"
+        elif self.model_provider in ("claude", "anthropic"):
+            return f"anthropic/{self.model}"
+        elif self.model_provider == "gemini":
+            return f"gemini/{self.model}"
+        elif self.model_provider == "typhoon":
+            return f"typhoon/{self.model}"
+        elif self.model_provider == "custom":
+            return f"custom/{self.model}"
+        elif self.model_provider == "lm_studio":
+            # LM Studio models must be prefixed with "lm_studio/"
+            return f"lm_studio/{self.model}"
+        return self.model
+
+    @robust_llm_retry(max_retries=5, initial_backoff=3.0, max_backoff=90.0)
     def generate_completion(self, prompt, batch=False, chain_of_thought=False):
         """
-        Generate a completion for a given prompt using the set model and provider.
-
-        Parameters:
-        prompt (str): The input prompt for generating completion.
-        batch (bool): Whether to send multiple prompts in a batch (for Claude).
-        chain_of_thought (bool): Whether to generate a Chain of Thought (CoT) response.
-
-        Returns:
-        str: The completion text.
+        Generate completion using LiteLLM for all providers.
         """
-        # Add Chain of Thought prompt modification
-        if chain_of_thought:
-            self.system_content = """You will act as a Question Answering model. You are prohibited to say anything. 
+        try:
+            # Format model name for litellm
+            model_name = self._get_litellm_model_name()
 
-            Example #1:
-            [Prompt] Q: Yes or no: Would a pear sink in water? 
-            [Answer that you think] A: The density of a pear is about 0.6 g/cm^3, which is less than water. Thus, a pear would float. So the answer is no.
+            # Create messages in the format expected by LiteLLM
+            messages = [
+                {"role": "system", "content": self.system_content},
+                {"role": "user", "content": prompt}
+            ]
 
-            [Answer that you must provide to me]So the answer is no.
-
-            Example #2:
-            [Prompt]Q: How many keystrokes are needed to type the numbers from 1 to 500? Answer Choices: (a) 1156 (b) 1392 (c) 1480 (d) 1562 (e) 1788
-            [Answer that you think]A: The answer is B.
-
-            [Answer that you must provide to me]The answer is B.
-            
-            Example #3
-            [Prompt]Q: The cafeteria has 23 apples. If they used 20 to make lunch and bought 6 more.How many apples do they have?
-            [Answer that you think]A: The cafeteria started with 23 apples, used 20 for lunch, and bought 6 more. So, they have 9 apples left.
-
-            [Answer that you must provide to me]They have 9 apples left
-            """
-
-        if self.model_provider == "openai":
-            """
-            Generate a completion using OpenAI models.
-            """
-            response = openai.ChatCompletion.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": self.system_content},
-                    {"role": "user", "content": prompt}
-                ],
+            # Make the completion request
+            response = litellm.completion(
+                model=model_name,
+                messages=messages,
                 temperature=self.temperature,
                 top_p=self.top_p,
-                max_tokens=self.max_tokens
+                max_tokens=self.max_tokens,
+                stream=False  # No streaming support for simplicity
             )
-            response_content = response.choices[0].message['content'].strip()
+
+            # Extract the response content
+            response_content = response.choices[0].message.content
             return response_content
 
-        elif self.model_provider == "claude":
-            """
-            Generate a completion using Claude's Messages API.
-            """
-            formatted_prompt = f"\n\nHuman: {prompt}\n\nAssistant:"
-            response = self.client.completions.create(
-                model=self.model,
-                max_tokens_to_sample=self.max_tokens,
-                temperature=self.temperature,
-                prompt=formatted_prompt
-            )
-            return response.completion
+        except litellm.exceptions.RateLimitError as e:
+            logger.warning(
+                f"Rate limit error with {self.model_provider}: {str(e)}")
+            raise Exception(
+                f"Rate limit exceeded for {self.model_provider}: {str(e)}")
 
-        elif self.model_provider == "gemini":
-            """
-            Generate a completion using Gemini's API.
-            """
-            model = genai.GenerativeModel(
-                model_name=self.model,
-                system_instruction=self.system_content)
-            response = model.generate_content(prompt)
-            return response.text
-            # # Start a chat session with history and send the input prompt
-            # model = genai.GenerativeModel(
-            #     model_name=self.model_name,
-            #     generation_config=self.generation_config,
-            # )
-            # chat_session = model.start_chat(
-            #     history=[
-            #         {
-            #             "role": [self.system_content],
-            #             "parts": [prompt]
-            #         }
-            #     ]
-            # )
-            # response = chat_session.send_message(prompt)
-            # return response.text
-
-        elif self.model_provider == "llama":
-            """
-            Generate a completion using a Llama model hosted on LMStudio.
-            """
-            data = {
-                "model": self.model,
-                "messages": [
-                    {"role": "system", "content": self.system_content},
-                    {"role": "user", "content": prompt}
-                ],
-                "temperature": self.temperature,
-                "max_tokens": self.max_tokens,
-                "stream": self.stream
-            }
-
-            response = requests.post(self.llama_url, json=data)
-
-            if response.status_code == 200:
-                # Extract the assistant's response content
-                assistant_response = response.json(
-                )['choices'][0]['message']['content']
-                return assistant_response
-            else:
-                return (f"Failed with status code {response.status_code}: {response.text}")
-
-        else:
-            raise ValueError(
-                f"Model provider {self.model_provider} is not supported.")
+        except Exception as e:
+            # Let the retry decorator handle other errors
+            raise
 
 
 class Test:
-    def __init__(self, name, prompt, expected_result, description=None,
-                 perturb_method=None, perturb_text=None, capability=None,
-                 pass_condition="increase", test_type=None):
+    def __init__(self, name, prompt, expected_result, description=None, perturb_method=None, perturb_text=None, capability=None, pass_condition="increase", test_type=None):
         self.name = name
         self.description = description
         self.prompt = prompt
@@ -240,37 +238,81 @@ class Test:
         self.score_original = None
         self.score_perturb = None
         self.completion_model = None
+        self.error = None
+
+    def _make_api_call(self, text, max_retries=5):
+        """
+        Attempt to send the API call using LiteLLM via PromptCompletion.
+        For rate limit errors, retry with backoff.
+        """
+        attempt = 0
+        backoff_time = 3.0
+        while True:
+            try:
+                response = self.completion_model.generate_completion(text)
+                return response
+            except Exception as e:
+                error_message = str(e).lower()
+                # Check if the error relates to rate limit or quota
+                if any(phrase in error_message for phrase in ["rate limit", "quota", "capacity", "too many"]):
+                    attempt += 1
+                    jitter = random.uniform(0.5, 1.5)
+                    wait_time = backoff_time * jitter
+
+                    logger.warning(
+                        f"Rate limit hit on attempt {attempt} for test {self.name}. "
+                        f"Waiting {wait_time:.2f}s before retry.")
+
+                    time.sleep(wait_time)
+
+                    # Double the backoff for next attempt if needed
+                    backoff_time = min(backoff_time * 2, 120.0)
+                else:
+                    # For non-rate limit errors, cap the number of retries
+                    attempt += 1
+                    if attempt >= max_retries:
+                        logger.error(
+                            f"Non rate-limit error after {max_retries} attempts for test {self.name}: {str(e)}")
+                        return f"ERROR: {str(e)}"
+                    else:
+                        sleep_time = min(2.0 * attempt, 5.0)
+                        logger.warning(
+                            f"Error on attempt {attempt} for test {self.name}: {str(e)}. Waiting {sleep_time:.2f}s before retry.")
+                        time.sleep(sleep_time)
 
     def run(self, completion_model: PromptCompletion):
-        self.completion_model = completion_model
-        self.original_response = self.get_response(self.prompt)
-        # if self.perturb_method:
-        #     self.perturb_text = self.perturb_method(self.prompt)
-        self.perturb_response = self.get_response(self.perturb_text)
+        try:
+            self.completion_model = completion_model
+            logger.info(f"Running test: {self.name}")
+            self.original_response = self._make_api_call(self.prompt)
+            if isinstance(self.original_response, str) and self.original_response.startswith("ERROR:"):
+                self.error = self.original_response
+                self.score_original = 0
+                return
 
-        if self.original_response:
-            self.score_original = self.evaluate(
-                similarity_model, self.original_response)
-        if self.perturb_response:
-            self.score_perturb = self.evaluate(
-                similarity_model, self.perturb_response)
+            # Add delay between calls to respect rate limits
+            provider = self.completion_model.model_provider.lower()
+            # Simple delay based on provider - could use more sophisticated approach
+            time.sleep(1.0)  # Base delay between calls
 
-    def get_response(self, text):
-        if not text:
-            return None
-        return self.completion_model.generate_completion(text)
+            if self.perturb_text:
+                self.perturb_response = self._make_api_call(self.perturb_text)
 
-    def evaluate(self, model, response):
-        if response is None:
-            return None
-        return evaluate_response(response, self.expected_result, model)
+            if self.original_response:
+                self.score_original = evaluate_response(
+                    self.original_response, self.expected_result, similarity_model)
+            if self.perturb_response:
+                self.score_perturb = evaluate_response(
+                    self.perturb_response, self.expected_result, similarity_model)
+        except Exception as e:
+            logger.error(f"Error running test {self.name}: {str(e)}")
+            self.error = str(e)
+            self.original_response = f"ERROR: {str(e)}"
+            if self.score_original is None:
+                self.score_original = 0
 
     def summarize(self):
         fail = False
-        # Temporal Case = score decrease -> pass
-        # if self.perturb_method == "temporal":
-        #     self.pass_condition == "decrease"
-
         if self.score_original is not None and self.score_perturb is not None:
             if self.pass_condition == "decrease":
                 if self.score_perturb >= self.score_original:
@@ -278,9 +320,9 @@ class Test:
             elif self.pass_condition == "increase":
                 if self.score_perturb < self.score_original:
                     fail = True
-                if self.score_original < 0.7:
+                if self.score_original < 0.8:
                     fail = True
-        return {
+        result = {
             'name': self.name,
             'description': self.description,
             'test_type': self.test_type,
@@ -288,10 +330,12 @@ class Test:
             'expected_result': self.expected_result,
             'perturb_text': self.perturb_text,
             'pass_condition': self.pass_condition,
-            'capability': self.capability,
             'response_original': self.original_response,
             'response_perturb': self.perturb_response,
             'score_original': self.score_original,
             'score_perturb': self.score_perturb,
             'fail': fail
         }
+        if self.error:
+            result['error'] = self.error
+        return result

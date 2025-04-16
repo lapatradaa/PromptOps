@@ -34,7 +34,7 @@ export default function Home() {
             className={styles.startButton}
             onClick={() => router.push('/overview')}
           >
-            Get Start &gt;
+            Get Started &gt;
           </button>
         </div>
         <img src='/images/illustration1.svg' alt="Illustration" />

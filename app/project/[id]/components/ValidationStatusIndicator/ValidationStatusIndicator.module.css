@@ -1,0 +1,57 @@
+/* @/app/project/[id]/components/ValidationStatusIndicator/ValidationStatusIndicator.module.css */
+.statusIndicator {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 400;
+    margin-left: 5px;
+    transition: all 0.2s ease;
+}
+
+.icon {
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+.complete {
+    background-color: rgba(209, 250, 229, 0.8);
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.complete .icon {
+    color: #10b981;
+}
+
+.incomplete {
+    background-color: rgba(254, 243, 199, 0.8);
+    color: #92400e;
+    border: 1px solid #f59e0b;
+}
+
+.incomplete .icon {
+    color: #f59e0b;
+}
+
+/* Animation for incomplete state */
+@media (prefers-reduced-motion: no-preference) {
+    .incomplete {
+        animation: pulse-border 2s infinite;
+    }
+}
+
+@keyframes pulse-border {
+    0% {
+        border-color: rgba(245, 158, 11, 0.5);
+    }
+
+    50% {
+        border-color: rgba(245, 158, 11, 1);
+    }
+
+    100% {
+        border-color: rgba(245, 158, 11, 0.5);
+    }
+}

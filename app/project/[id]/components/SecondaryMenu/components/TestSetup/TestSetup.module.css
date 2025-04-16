@@ -1,0 +1,132 @@
+/* TestSetup.module.css */
+.menuList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    overflow-y: auto;
+    position: relative;
+    height: 100%;
+}
+
+.menuItem {
+    padding: 12px 16px 12px 35px;
+    display: flex;
+    align-items: center;
+    color: #403B61;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    font-weight: 400;
+    position: relative;
+    user-select: none;
+}
+
+.emptyArea {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #E5E7EB;
+    border-radius: 8px;
+    background-color: #F9FAFB;
+    color: #9996AC;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px;
+}
+
+.showRemoveZone {
+    display: flex;
+}
+
+.removeZoneActive {
+    background-color: #FEE2E2;
+    border-color: #EF4444;
+    color: #EF4444;
+}
+
+.removeZoneActive .trashIcon {
+    color: #EF4444;
+}
+
+/* Hide menu items when showing remove zone */
+.showRemoveZone~.menuItem {
+    display: none;
+}
+
+.trashIcon {
+    font-size: 24px;
+}
+
+.dropdownContent {
+    background-color: white;
+    padding: 8px 10px;
+    animation: slideDown 0.2s ease;
+}
+
+.showRemoveZone~.dropdownContent {
+    display: none;
+}
+
+.menuItem.active {
+    color: #BA5CDB;
+}
+
+.menuItem::before {
+    content: '›';
+    position: absolute;
+    left: 16px;
+    color: #9996AC;
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+.menuItem.active::before {
+    transform: rotate(90deg);
+    color: #BA5CDB;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 1440px) {
+    .menuList {
+        padding: 14px;
+        gap: 7px;
+    }
+
+    .menuItem {
+        padding: 11px 14px 11px 30px;
+        font-size: 15px;
+    }
+
+    .menuItem::before {
+        left: 14px;
+        font-size: 17px;
+    }
+
+    .emptyArea {
+        padding: 20px 14px;
+        font-size: 13px;
+    }
+
+    .emptyArea .trashIcon {
+        font-size: 22px;
+    }
+}

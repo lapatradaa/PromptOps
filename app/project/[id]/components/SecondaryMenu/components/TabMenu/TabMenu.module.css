@@ -33,9 +33,14 @@
     background: linear-gradient(270deg, #9F19CC 0%, #00CFFC 100%);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1440px) {
     .tab {
-        padding: 10px;
-        font-size: 14px;
+        padding: 11px;
+        font-size: 15px;
+    }
+
+    .tab.active::after {
+        bottom: -1.5px;
+        height: 2px;
     }
 }

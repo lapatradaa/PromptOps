@@ -1,0 +1,328 @@
+.blockContainer {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    min-width: 200px;
+    transform: translate(0, 0);
+}
+
+.blockContainer * {
+    pointer-events: none;
+}
+
+.blockHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 32px;
+    padding: 12px;
+    border-bottom: 1px solid #F2F1F7;
+}
+
+.draggableBlockLeft {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: #403B61;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.uploadButton,
+.processButton {
+    width: 100%;
+    background-color: #C87DE2;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.dragging {
+    cursor: grabbing !important;
+    opacity: 0.5;
+}
+
+.blockIcon {
+    font-size: 24px;
+    color: #BA5CDB;
+}
+
+.dragIndicator svg {
+    color: #9996AC;
+    font-size: 24px;
+    position: relative;
+    top: 3px;
+}
+
+.blockMain {
+    min-height: 60px;
+    padding: 12px;
+}
+
+/* Evaluation container specific styles */
+.evaluationContainer {
+    background-color: #FAFAFC;
+    border: 1px solid #E5E7EB;
+}
+
+.evaluationContainer .evaluationIcon,
+.evaluationContainer span {
+    color: #BA5CDB;
+}
+
+.evaluationContainer .blockHeader {
+    background-color: white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+/* Topic block specific styles */
+.topicContainer {
+    text-align: center;
+    background-color: white;
+}
+
+.topicContainer .blockHeader {
+    padding: 20px 12px;
+    border-bottom: none;
+    position: relative;
+}
+
+.topicContainer .draggableBlockLeft {
+    position: relative;
+    width: 100%;
+}
+
+.topicContainer .blockIcon {
+    font-size: 30px;
+    color: #A0D3F8;
+    position: absolute;
+    left: 0;
+}
+
+.topicContainer span {
+    color: #808080;
+    width: 100%;
+    font-weight: 400;
+    text-align: center;
+    display: block;
+}
+
+.topicContainer .dragIndicator {
+    position: absolute;
+    right: 12px;
+}
+
+.topicContainer .blockMain {
+    display: none;
+}
+
+/* Dashboard specific styles */
+.dashboardHeader {
+    border-bottom: none;
+}
+
+.dashboardHeader .draggableBlockLeft {
+    flex: 1;
+    justify-content: center;
+}
+
+.dashboardContainer {
+    text-align: center;
+    background-color: #BA5CDB;
+}
+
+.dashboardContainer .blockHeader {
+    padding: 20px;
+}
+
+.dashboardContainer .draggableBlockLeft {
+    flex: 1;
+    justify-content: center;
+    gap: 8px;
+}
+
+.dashboardContainer .blockIcon {
+    font-size: 30px;
+    color: white;
+}
+
+.dashboardContainer span {
+    color: white;
+}
+
+.dashboardContainer .dragIndicator svg {
+    color: white;
+}
+
+.dashboardContainer .blockMain {
+    display: none;
+}
+
+/* Output container specific styles */
+.outputContainer .blockHeader {
+    background-color: white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.outputContainer .outputIcon {
+    font-size: 24px;
+    color: #42A7F1;
+}
+
+/* Preprocessing container */
+.preprocessingContainer .preprocessingIcon {
+    font-size: 24px;
+    color: #BA5CDB;
+}
+
+/* Test Case block */
+.testCaseBlock {
+    background: white;
+    border: 1px solid #e5e7eb;
+}
+
+.testCaseBlock .blockHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.testCaseBlock .draggableBlockLeft {
+    display: flex;
+    align-items: center;
+}
+
+.testCaseBlock .blockIcon {
+    color: #CCA3DA;
+    font-size: 38px;
+}
+
+.testCaseInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0px;
+    margin: 0 20px;
+    flex: 1;
+    line-height: 1.2;
+}
+
+.shotType {
+    font-size: 17px;
+    color: #403B61;
+    font-weight: 400;
+}
+
+.testFormat {
+    font-size: 14px;
+    color: #6B7280;
+}
+
+.fieldsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.fieldRow {
+    display: flex;
+    align-items: center;
+    border: 1px solid #E5E7EB;
+    padding: 10px 15px;
+    background-color: white;
+    border-radius: 15px;
+}
+
+.fieldIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #CCA3DA;
+    font-size: 22px;
+}
+
+.fieldBox {
+    flex: 1;
+    font-size: 16px;
+    color: #808080;
+    text-align: left;
+    font-weight: 400;
+    margin-left: 20px;
+}
+
+.blockMain {
+    min-height: 24px;
+    padding: 15px 12px;
+}
+
+@media (max-width: 1440px) {
+    .blockContainer {
+        min-width: 180px;
+    }
+
+    .blockHeader {
+        padding: 10px;
+    }
+
+    .draggableBlockLeft {
+        gap: 12px;
+        font-size: 15px;
+    }
+
+    .blockIcon {
+        font-size: 22px;
+    }
+
+    .uploadButton,
+    .processButton {
+        padding: 9px;
+        font-size: 13px;
+    }
+
+    .blockMain {
+        padding: 10px;
+        min-height: 50px;
+    }
+
+    .dashboardContainer .blockHeader,
+    .topicContainer .blockHeader {
+        padding: 18px 10px;
+    }
+
+    .topicContainer .blockIcon {
+        font-size: 26px;
+    }
+
+    .shotType {
+        font-size: 15px;
+    }
+
+    .testFormat {
+        font-size: 13px;
+    }
+
+    .fieldBox {
+        font-size: 15px;
+        margin-left: 18px;
+    }
+
+    .fieldIcon {
+        font-size: 20px;
+    }
+
+    .fieldRow {
+        padding: 9px 14px;
+    }
+}

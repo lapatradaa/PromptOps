@@ -2,7 +2,7 @@
 import { MdCancel } from 'react-icons/md';
 import Link from 'next/link';
 import styles from './Auth.module.css';
-import SignInSignUp from '../components/SignInSignUp/SignInSignUp';
+import SignInSignUp from '../components/SignInSignUp';
 
 export default function Auth() {
     return (

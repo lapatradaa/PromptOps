@@ -1,7 +1,10 @@
+// @/app/project/[id]/components/Header/index.tsx
 import Link from 'next/link';
 import { FaAngleLeft } from 'react-icons/fa';
 import { RiStopCircleFill, RiPlayCircleFill } from "react-icons/ri";
+import { BlockValidationResult } from '@/app/types';
 import styles from './Header.module.css';
+import ValidationStatusIndicator from '../ValidationStatusIndicator';
 
 interface HeaderProps {
     projectName: string;
@@ -9,8 +12,9 @@ interface HeaderProps {
     isPlaying: boolean;
     isLoading: boolean;
     error: string | null;
+    validationResult: BlockValidationResult;
     onPlay: () => void;
-    onPause: () => void;
+    // onPause: () => void;
 }
 
 const Header = ({
@@ -19,8 +23,9 @@ const Header = ({
     isPlaying,
     isLoading,
     error,
+    validationResult,
     onPlay,
-    onPause
+    // onPause
 }: HeaderProps) => {
     return (
         <>
@@ -32,6 +37,7 @@ const Header = ({
                     </linearGradient>
                 </defs>
             </svg>
+
             <header className={styles.header}>
                 <div className={styles.headerLeft}>
                     <div className={styles.backLinkContainer}>
@@ -41,6 +47,7 @@ const Header = ({
                             </span>
                         </Link>
                     </div>
+
                 </div>
 
                 <div className={styles.headerCenter}>
@@ -52,21 +59,26 @@ const Header = ({
                         Blocks connected: <span>{blocksCount}</span>
                     </div>
 
+                    <ValidationStatusIndicator
+                        validationResult={validationResult}
+                        className={styles.validationStatus}
+                    />
+
                     {error && (
                         <div className={styles.errorContainer}>
                             <span className={styles.errorMessage}>Error: {error}</span>
                         </div>
                     )}
 
-                    <span
-                        className={`${styles.pauseButton} ${isPlaying ? styles.active : ''}`}
-                        onClick={onPause}
-                    >
-                        <RiStopCircleFill />
-                    </span>
+                    {/* <span
+            className={`${styles.pauseButton} ${isPlaying ? styles.active : ''}`}
+            onClick={onPause}
+            >
+            <RiStopCircleFill />
+          </span> */}
 
                     <span
-                        className={`${styles.playButton} ${isPlaying ? styles.active : ''} ${isLoading ? styles.loading : ''}`}
+                        className={`${styles.playButton} ${isPlaying ? styles.active : ''} ${isLoading ? styles.loading : ''} ${!validationResult.isComplete ? styles.disabled : ''}`}
                         onClick={onPlay}
                     >
                         <RiPlayCircleFill />
