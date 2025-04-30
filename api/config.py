@@ -1,18 +1,18 @@
 # api/config.py
-from pydantic_settings import BaseSettings
-from dotenv import load_dotenv
-import os
+from environs import Env
 from pathlib import Path
 
-# Load .env file explicitly
-env_path = Path(__file__).parent / '.env'
-load_dotenv(dotenv_path=env_path)
+# point at your .env
+env_path = Path(__file__).parent / ".env"
 
-class Settings(BaseSettings):
-    API_KEY: str = os.getenv("API_KEY", "")
-    ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
-    LOG_LEVEL: str = os.getenv("LOG_LEVEL")
-    HTTPS_REDIRECT: bool = os.getenv("HTTPS_REDIRECT", "FALSE").upper() == "TRUE"
+env = Env()
+env.read_env(env_path)    # load from .env
 
-    class Config:
-        env_file = ".env"
+
+class Settings:
+    API_KEY = env.str("API_KEY", default="")
+    ALLOWED_ORIGINS = env.list("ALLOWED_ORIGINS",
+                               subcast=str,
+                               default=["http://localhost:3000"])
+    LOG_LEVEL = env.str("LOG_LEVEL", default="INFO")
+    HTTPS_REDIRECT = env.bool("HTTPS_REDIRECT", default=False)

@@ -134,9 +134,8 @@
 .modelSelectionArea {
     transition: all 0.3s ease;
     max-height: 70vh;
-    overflow-y: auto;
+    /* overflow-y: auto; */
     margin-bottom: 140px;
-    /* Add space for fixed selectedSection */
 }
 
 .modelSelectionArea.hidden {

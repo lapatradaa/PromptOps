@@ -136,6 +136,7 @@ class PromptCompletion:
             litellm.api_key = self.api_key or "dummy_openai_api_key"
         elif self.model_provider == "claude":
             litellm.api_key = self.api_key or "dummy_claude_api_key"
+            litellm.api_base = "https://api.anthropic.com/v1"
         elif self.model_provider == "gemini":
             litellm.api_key = self.api_key or "dummy_gemini_api_key"
         # elif self.model_provider == "lm_studio":
@@ -170,7 +171,13 @@ class PromptCompletion:
         if self.model_provider == "openai":
             return f"openai/{self.model}"
         elif self.model_provider in ("claude", "anthropic"):
-            return f"anthropic/{self.model}"
+        # For Claude 3.5 models, we need to use the correct model string
+            if "claude-3-5" in self.model:
+                # Use the model name directly without the prefix for Claude 3.5 models
+                return self.model
+            else:
+                # For older Claude models, use the anthropic/ prefix
+                return f"anthropic/{self.model}"
         elif self.model_provider == "gemini":
             return f"gemini/{self.model}"
         elif self.model_provider == "typhoon":

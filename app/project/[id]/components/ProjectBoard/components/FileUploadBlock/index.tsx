@@ -217,14 +217,14 @@ const FileUpload: React.FC<FileUploadProps> = ({
   // 2. A file is uploaded
   // 3. The context option change handler exists
   // 4. System prompt type is 'default' (not 'custom')
-  const isDefaultContent = systemPromptType === 'default' ||
+  const isDefaultPrompt = systemPromptType === 'default' ||
     (projectHasDefaultSystemPrompt === true);
 
   const showContextOptions =
     projectType === 'qa' &&
     !!fileName &&
     !!onContextOptionChange &&
-    isDefaultContent;
+    isDefaultPrompt;
 
   return (
     <div className={styles.container}>

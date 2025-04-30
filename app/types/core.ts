@@ -6,7 +6,7 @@ export type ShotType = 'Zero Shot' | 'One Shot' | 'Few Shot';
 
 export type BlockType = 'input' | 'evaluation-container' | 'topic' | 'dashboard' | 'output-container' | 'test-case' | 'metric';
 
-export type TopicType = 'Coreference' | 'Fairness' | 'Logic' | 'NER' | 'Negation' | 'Robustness' | 'SRL' | 'Taxonomy' | 'Temporal' | 'Vocabulary';
+export type TopicType = 'Coreference' | 'Fairness' | 'NER' | 'Negation' | 'Robustness' | 'SRL' | 'Taxonomy' | 'Temporal' | 'Vocabulary';
 
 export type MenuType = 'options' | 'llm' | 'chart' | 'dashboard' | null;
 

@@ -95,11 +95,11 @@ export function useLLMSettingsForm({ initialData = {} }: UseLLMSettingsFormProps
     const systemPrompt = formData.systemPrompt.type === 'custom'
       ? {
         ...formData.systemPrompt,
-        customContent: formData.systemPrompt.customPrompt
+        customPrompt: formData.systemPrompt.customPrompt
       }
       : {
         ...formData.systemPrompt,
-        customContent: '' // Clear custom content when using default type
+        customPrompt: '' // Clear custom content when using default type
       };
 
     return {

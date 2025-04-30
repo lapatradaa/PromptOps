@@ -73,7 +73,7 @@ const TopicList: React.FC<TopicListProps> = ({
               <div className={styles.topicConfig}>
                 <RobustnessScale
                   onChange={handleRobustnessChange}
-                  initialValue={topicConfigs && topicConfigs.robustness ? topicConfigs.robustness.swapPercentage : 10}
+                  initialValue={topicConfigs && topicConfigs.robustness ? topicConfigs.robustness.swapPercentage : 5}
                 />
               </div>
             )}

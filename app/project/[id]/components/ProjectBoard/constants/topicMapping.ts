@@ -6,8 +6,8 @@ export const TOPIC_MAPPING: Record<string, TopicType[]> = {
         'Vocabulary', 'Fairness', 'Robustness',
     ],
     qa: [
-        'Taxonomy', 'NER', 'Negation', 'Coreference',
-        'SRL', 'Logic', 'Vocabulary', 'Fairness', 'Robustness',
+        'Taxonomy', 'Negation', 'Coreference',
+        'SRL', 'Vocabulary', 'Fairness', 'Robustness',
     ],
     default: [],
 };

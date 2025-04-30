@@ -17,18 +17,20 @@ export const FormStepOne: React.FC<FormStepOneProps> = ({
 
   // Handle system prompt option change based on type
   const handleSystemPromptChange = (promptType: SystemPromptType) => {
-    // If custom type is selected, include the custom content
+    // Always preserve existing values to prevent undefined
+    const basePrompt = {
+      type: promptType,
+      customPrompt: formData.systemPrompt.customPrompt || '',
+      withContext: formData.systemPrompt.withContext || false
+    };
+
+    // Add type-specific fields
     if (promptType === 'custom') {
-      updateFormField('systemPrompt', {
-        type: promptType,
-        customPrompt: formData.systemPrompt.customPrompt,
-        withContext: formData.systemPrompt.withContext // Preserve the withContext setting
-      });
+      updateFormField('systemPrompt', basePrompt);
     } else {
-      // For default type, include defaultContent
+      // For default type, include defaultPrompt
       updateFormField('systemPrompt', {
-        type: promptType,
-        withContext: formData.systemPrompt.withContext, // Preserve the withContext setting
+        ...basePrompt,
         defaultPrompt: 'You will act like a question-answering system that answers the given question.'
       });
     }
@@ -77,6 +79,9 @@ export const FormStepOne: React.FC<FormStepOneProps> = ({
     );
   };
 
+  // Ensure the custom prompt is never undefined
+  const customPrompt = formData.systemPrompt.customPrompt || '';
+
   return (
     <div className={styles.inputGroup}>
       {/* Project Name */}
@@ -85,7 +90,7 @@ export const FormStepOne: React.FC<FormStepOneProps> = ({
         <input
           type="text"
           id="projectName"
-          value={formData.projectName}
+          value={formData.projectName || ''}
           onChange={(e) => updateFormField('projectName', e.target.value)}
           placeholder="Your Project Name"
           className={styles.input}
@@ -106,7 +111,7 @@ export const FormStepOne: React.FC<FormStepOneProps> = ({
                 updateFormField('type', 'qa');
                 if (!['default', 'custom', 'withContext', 'withoutContext'].includes(formData.systemPrompt.type)) {
                   // Reset to default if current selection isn't valid for QA
-                  updateFormField('systemPrompt', { type: 'default' });
+                  handleSystemPromptChange('default');
                 }
               }}
               className={styles.radioInputInline}
@@ -124,7 +129,7 @@ export const FormStepOne: React.FC<FormStepOneProps> = ({
                 updateFormField('type', 'sentiment');
                 if (formData.systemPrompt.type !== 'custom' && formData.systemPrompt.type !== 'default') {
                   // Reset to default if current selection isn't valid for sentiment
-                  updateFormField('systemPrompt', { type: 'default' });
+                  handleSystemPromptChange('default');
                 }
               }}
               className={styles.radioInputInline}
@@ -140,7 +145,7 @@ export const FormStepOne: React.FC<FormStepOneProps> = ({
         <label htmlFor="llm">LLM</label>
         <select
           id="llm"
-          value={formData.llm}
+          value={formData.llm || ''}
           onChange={(e) => handleLlmChange(e.target.value)}
           className={`${styles.llmDropdown} ${!formData.llm && styles.placeholder}`}
         >
@@ -210,20 +215,13 @@ export const FormStepOne: React.FC<FormStepOneProps> = ({
             </label>
             <input
               placeholder="Your content"
-              value={formData.systemPrompt.customPrompt}
+              value={customPrompt}
               onChange={(e) => {
                 const newCustomPrompt = e.target.value;
                 updateFormField('systemPrompt', {
                   ...formData.systemPrompt,
                   customPrompt: newCustomPrompt
                 });
-                // Also update the system prompt if custom is already selected
-                if (formData.systemPrompt.type === 'custom') {
-                  updateFormField('systemPrompt', {
-                    type: 'custom',
-                    customPrompt: newCustomPrompt
-                  });
-                }
               }}
               disabled={formData.systemPrompt.type !== 'custom'}
               className={`${styles.customInput} ${formData.systemPrompt.type !== 'custom' ? styles.disabled : ''}`}

@@ -138,11 +138,11 @@ export async function GET(
               console.log(`[SSE-${connectionId}] Test ${testId} pending too long, checking FastAPI directly`);
 
               try {
-                const fastApiUrl = process.env.FASTAPI_URL || 'http://localhost:8000';
+                const fastApiUrl = (process.env.FASTAPI_URL || 'http://localhost:8000').replace(/\/$/, '');
                 const response = await fetch(`${fastApiUrl}/task-status/${testId}`, {
                   headers: {
                     'X-API-Key': process.env.NEXT_PUBLIC_API_KEY || '',
-                  },
+                  }
                 });
 
                 if (response.ok) {
@@ -221,7 +221,7 @@ export async function GET(
         // If test is already completed, get results from cache first
         const initialStatus = TestStore.getTestStatus(testId);
         if (initialStatus && initialStatus.status === "completed" && !initialStatus.results) {
-          const fastApiUrl = process.env.FASTAPI_URL || 'http://localhost:8000';
+          const fastApiUrl = (process.env.FASTAPI_URL || 'http://localhost:8000').replace(/\/$/, '');
           const cachedResults = await fetchAndCacheResults(fastApiUrl, testId);
 
           if (cachedResults) {
@@ -234,11 +234,11 @@ export async function GET(
           if (isClosed) return;
 
           try {
-            const fastApiUrl = process.env.FASTAPI_URL || 'http://localhost:8000';
+            const fastApiUrl = (process.env.FASTAPI_URL || 'http://localhost:5328').replace(/\/$/, '');
             const response = await fetch(`${fastApiUrl}/task-status/${testId}`, {
               headers: {
                 'X-API-Key': process.env.NEXT_PUBLIC_API_KEY || '',
-              },
+              }
             });
 
             if (response.ok) {

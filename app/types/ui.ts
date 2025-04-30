@@ -82,11 +82,11 @@ export const MODEL_OPTIONS = {
     { value: 'gpt-4', label: 'GPT-4', modelProvider: 'openai' },
     { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo', modelProvider: 'openai' }
   ],
-  Claude: [
-    { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet', modelProvider: 'claude' },
-    { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (Oct 2024)', modelProvider: 'claude' },
-    { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku', modelProvider: 'claude' },
-  ],
+  // Claude: [
+  //   { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet', modelProvider: 'claude' },
+  //   { value: 'claude-3-5-sonnet-20240620', label: 'Claude 3.5 Sonnet', modelProvider: 'claude' },
+  //   { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku', modelProvider: 'claude' },
+  // ],
   // Llama: [
   //   { value: 'llama-3.2-3b-instruct', label: 'Llama 3.2 3B', modelProvider: 'llama' }
   // ],

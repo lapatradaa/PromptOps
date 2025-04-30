@@ -266,7 +266,7 @@ async function handleStartTest(request: NextRequest, projectId: string, userId: 
 
         // Call FastAPI to start the test
         try {
-            const fastApiUrl = process.env.FASTAPI_URL || 'http://localhost:8000';
+            const fastApiUrl = (process.env.FASTAPI_URL || 'http://localhost:8000').replace(/\/$/, '');;
             console.log(`[test-api] Calling FastAPI at ${fastApiUrl}/process-combined`);
 
             // Start the FastAPI test asynchronously
@@ -369,7 +369,7 @@ async function handleUpdateStatus(data: any, projectId: string, userId: string) 
         // If status is "aborted", we need to send an abort request to FastAPI
         if (status === "aborted") {
             try {
-                const fastApiUrl = process.env.FASTAPI_URL || 'http://localhost:8000';
+                const fastApiUrl = (process.env.FASTAPI_URL || 'http://localhost:8000').replace(/\/$/, '');
                 console.log(`[test-api] Sending abort request to FastAPI for test ${testId}`);
 
                 const abortResponse = await fetch(`${fastApiUrl}/abort-test/${testId}`, {

@@ -27,11 +27,9 @@ const TOPIC_MAPPING: Record<string, TopicType[]> = {
   ],
   qa: [
     'Taxonomy',
-    'NER',
     'Negation',
     'Coreference',
     'SRL',
-    'Logic',
     'Vocabulary',
     'Fairness',
     'Robustness',

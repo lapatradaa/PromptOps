@@ -17,12 +17,12 @@ export const getSelectedModelLabel = (formData: FormState) => {
 
 export const isNextButtonDisabled = (formData: FormState) => {
     const basicValidation = !formData.projectName || !formData.llm;
-    const customContentValidation = formData.systemPrompt.type === 'custom' && !formData.systemPrompt.customPrompt;
+    const customPromptValidation = formData.systemPrompt.type === 'custom' && !formData.systemPrompt.customPrompt;
 
     // Add URL validation for Llama or custom models
     const urlValidation = isLlamaModelOrCustom(formData.llm) && !formData.url;
 
-    return basicValidation || customContentValidation || urlValidation;
+    return basicValidation || customPromptValidation || urlValidation;
 };
 
 export const isCreateButtonDisabled = (formData: FormState) => {
