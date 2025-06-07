@@ -1,4 +1,4 @@
-# api/Backend_v1/PromptOps/perturb.py
+# api/PromptOps/perturb.py
 
 import random
 import string
@@ -21,9 +21,6 @@ import inflect
 nlp = spacy.load("en_core_web_sm")
 
 dictionary = PyDictionary()  # Initialize PyDictionary
-
-# url = "http://127.0.0.1:8000/v1/chat/completions"
-
 
 class QuestionConverter:
     def __init__(self):

@@ -1,3 +1,4 @@
+// app/project/[id]/components/LLMSetting/index.tsx
 'use client';
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
@@ -15,7 +16,7 @@ import { mapProjectToFormData } from './utils/modelHelpers';
 // Components
 import ProjectTypeSelection from './components/ProjectTypeSelection';
 import ModelSelection from './components/ModelSelection';
-import UrlField from './components/UrlField';
+// import UrlField from './components/UrlField';
 import SystemPromptSection from './components/SystemPromptSection';
 import ApiKeyField from './components/ApiKeyField';
 
@@ -90,12 +91,12 @@ const LLMSettingContainer: React.FC<LLMSettingContainerProps> = ({ onProjectType
                     />
 
                     {/* URL Field - Only shown for Llama and custom models */}
-                    {isLlamaModelOrCustom(formData.llm) && (
+                    {/* {isLlamaModelOrCustom(formData.llm) && (
                         <UrlField
                             value={formData.url}
                             onChange={(url) => updateField('url', url)}
                         />
-                    )}
+                    )} */}
 
                     {/* System Prompt */}
                     <SystemPromptSection

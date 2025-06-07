@@ -30,12 +30,14 @@ export default function Home() {
       <main className={styles.main}>
         <div className={styles.descContainer}>
           <p>Optimizes & Tests prompts for LLM with <span>PromptOps</span></p>
+{/*
           <button
             className={styles.startButton}
             onClick={() => router.push('/overview')}
           >
             Get Started &gt;
           </button>
+*/}
         </div>
         <img src='/images/illustration1.svg' alt="Illustration" />
       </main>

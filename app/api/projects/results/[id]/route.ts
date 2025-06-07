@@ -1,87 +1,56 @@
-// @/app/api/projects/results/[id]/route.ts
+// File: app/api/projects/results/[id]/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import clientPromise from "@/lib/mongodb";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    try {
-        // Authenticate user
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-        
-        // Await params first!
-        const resolvedParams = params;
-        const { id } = await resolvedParams;
-        const searchParams = req.nextUrl.searchParams;
-
-        // Extract optional filter parameters
-        const promptOption = searchParams.get('option');  // e.g., zero, one, few shot
-        const formatType = searchParams.get('format');    // e.g., icqa, std, cot
-
-        // Connect to the database
-        const client = await clientPromise;
-        const db = client.db("promptops");
-
-        // Find the results tracking document by project ID
-        const resultsDoc = await db.collection("results").findOne({ projectId: id });
-
-        // If no results are found, return a successful JSON response with an empty array
-        if (!resultsDoc || !resultsDoc.resultIds || resultsDoc.resultIds.length === 0) {
-            return NextResponse.json({
-                results: [],
-                message: "No results found for this project"
-            });
-        }
-
-        // Build the query based on project id and the optional filters
-        let query: any = { projectId: id };
-        if (promptOption) query.prompt_option = promptOption;
-        if (formatType) query.format_type = formatType;
-
-        // Include only the results that match the tracked result IDs
-        const resultIds = resultsDoc.resultIds;
-        query._id = { $in: resultIds };
-
-        // Retrieve matching results sorted by creation date (newest first)
-        const results = await db.collection("result")
-            .find(query)
-            .sort({ createdAt: -1 })
-            .toArray();
-
-        // If there are no matching results after filtering, return an empty results set
-        if (!results || results.length === 0) {
-            return NextResponse.json({
-                results: [],
-                message: "No results found matching the specified criteria"
-            });
-        }
-
-        // Get the first result (the most recent one that matches criteria)
-        const result = results[0];
-        return NextResponse.json({
-            results: result.results,
-            prompt_option: result.prompt_option,
-            format_type: result.format_type,
-            modelName: result.modelName,
-            createdAt: result.createdAt
-        });
-    } catch (error) {
-        console.error(`[API] Error fetching results:`, error);
-        return NextResponse.json(
-            { error: "Failed to fetch test results" },
-            { status: 500 }
-        );
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const { id } = await params;
+    const client = await clientPromise;
+    const db = client.db("promptops");
+
+    // fetch container of recent runs
+    const container = await db.collection("results").findOne({ projectId: id });
+    if (!container?.resultIds?.length) {
+        return NextResponse.json({ results: {} });
+    }
+
+    const latest = await db
+        .collection("result")
+        .find({ projectId: id, _id: { $in: container.resultIds } })
+        .sort({ createdAt: -1 })
+        .limit(1)
+        .next();
+
+    if (!latest) {
+        return NextResponse.json({ results: {} });
+    }
+
+    // wrap stored `latest.results` under `results`
+    return NextResponse.json({
+        results: latest.results,
+        prompt_option: latest.prompt_option,
+        format_type: latest.format_type,
+        modelName: latest.modelName,
+        createdAt: latest.createdAt
+    });
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+
+export async function POST(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
         const { id } = await params;
         const data = await req.json();

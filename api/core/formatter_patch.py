@@ -1,3 +1,4 @@
+# api/core/formatter_patch.py
 """
 Module to patch the save_formatted_data_to_csv method of formatter classes.
 This is imported by logic.py to ensure formatters can handle missing directories.
@@ -60,8 +61,8 @@ def apply_patches():
 
     # Import the formatter classes
     try:
-        from ..Backend_v1.PromptOps.std_templates import ShotTemplateFormatter
-        from ..Backend_v1.PromptOps.icqa_templates import ICQATemplateFormatter
+        from PromptOps.std_templates import ShotTemplateFormatter
+        from PromptOps.icqa_templates import ICQATemplateFormatter
         # from ..Backend_v1.PromptOps.cot_templates import COTTemplateFormatter
 
         # Only patch if we haven't already stored the original methods

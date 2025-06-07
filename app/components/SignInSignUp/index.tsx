@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import styles from './SignInSignUp.module.css';
 import { FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
 import { toast } from "react-hot-toast"; // Import toast from react-hot-toast
@@ -23,6 +23,10 @@ export default function SignInSignUp() {
 
       // Show loading toast
       const loadingToast = toast.loading('Signing in...');
+
+      // Get the callbackUrl from URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const callbackUrl = urlParams.get('callbackUrl') || '/overview';
 
       const result = await signIn('credentials', {
         email: formData.email,
@@ -48,13 +52,12 @@ export default function SignInSignUp() {
 
         toast.error(errorMessage);
         throw new Error(errorMessage);
+      } else {
+        toast.success('Successfully signed in!');
+
+        // Use router.replace instead of router.push to avoid back button issues
+        router.replace(callbackUrl);
       }
-
-      // Show success toast
-      toast.success('Successfully signed in!');
-
-      // Navigate to overview page after successful sign-in
-      router.replace('/overview');
     } catch (err: any) {
       setError(err.message || 'Sign-in failed.');
     }

@@ -281,7 +281,8 @@
 /* Menu Icons */
 .optionsMenu,
 .llmMenu,
-.chartMenu {
+.chartMenu,
+.tutorialMenu {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -298,7 +299,8 @@
 /* Active states */
 .optionsMenu.active,
 .llmMenu.active,
-.chartMenu.active {
+.chartMenu.active,
+.tutorialMenu.active {
     color: var(--primary);
     background-color: var(--light-bg);
 }
@@ -306,7 +308,8 @@
 /* Hover effects */
 .optionsMenu:hover:not(.active),
 .llmMenu:hover:not(.active),
-.chartMenu:hover:not(.active) {
+.chartMenu:hover:not(.active),
+.tutorialMenu:hover:not(.active) {
     background-color: #f3f4f6;
 }
 

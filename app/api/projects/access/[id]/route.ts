@@ -7,9 +7,10 @@ import { authOptions } from '@/lib/auth';
 
 export async function POST(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -20,7 +21,7 @@ export async function POST(
 
         // Update the project's lastAccessedAt
         await db.collection("projects").updateOne(
-            { _id: new ObjectId(params.id), userId: session.user.id },
+            { _id: new ObjectId(id), userId: session.user.id },
             { $set: { lastAccessedAt: new Date() } }
         );
 

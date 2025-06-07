@@ -1,3 +1,4 @@
+// app/project/[id]/components/ScoreComparison/ResultsVisualization.tsx
 import React from "react";
 import styles from "./ScoreComparison.module.css";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';

@@ -1,350 +1,218 @@
-// @/app/project/[id]/hooks/useTestLLM.ts
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Block, SHOT_TYPE_MAP, TEMPLATE_MAP } from '@/app/types';
-import { useSSE } from './useSSE';
-import { disableFileChecking, enableFileChecking } from '@/app/utils/client-file-utils';
+// app/project/[id]/hooks/useTestLLM.ts
 
-// Define event types and payload interfaces
-export type TestEventType = 'testStart' | 'testComplete' | 'testError';
+import { useState, useCallback, useRef, useEffect } from "react";
+import {
+  Block,
+  SHOT_TYPE_MAP,
+  TEMPLATE_MAP,
+  TestResults as TypedTestResults,
+  DEFAULT_TEST_RESULTS,
+} from "@/app/types";
+import { useTestStatus } from "@/app/hooks/useTestStatus";
+import testApiClient from "@/app/utils/test-utils/test-api-client";
+import { disableFileChecking, enableFileChecking } from "@/app/utils/client-file-utils";
+import { testEvents } from "@/app/utils/test-utils/test-events";
 
-interface TestStartPayload {
-    projectId: string;
-    timestamp?: number;
+interface UseTestLLMProps {
+  blocks: Block[];
+  projectId: string;
+  project?: { 
+    llm?: string;
+    modelProvider?: string;
+    type?: string;
+    url?: string;
+    apiKey?: string | null;
+    SystemPrompt?: any;
+  } | null;
 }
 
-interface TestCompletePayload {
-    projectId: string;
-    testId: string;
-    results?: any;
-}
+export function useTestLLM({ blocks, projectId, project }: UseTestLLMProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [testResults, setTestResults] = useState<TypedTestResults | null>(null);
+  const [testRunId, setTestRunId] = useState<string | null>(null);
+  const [savedToDb, setSavedToDb] = useState(false);
+  const startTimeRef = useRef<number | null>(null);
 
-interface TestErrorPayload {
-    projectId: string;
-    error: string;
-}
+  const statusEvt = useTestStatus(projectId, testRunId);
 
-export type TestEventPayload = TestStartPayload | TestCompletePayload | TestErrorPayload;
-export type TestEventCallback = (data: TestEventPayload) => void;
+  // disable file‐watching while a test is mounted
+  useEffect(() => {
+    disableFileChecking();
+    return () => enableFileChecking();
+  }, []);
 
-// Simple event system for test lifecycle events
-export const testEvents = {
-    listeners: new Map<TestEventType, Set<TestEventCallback>>(),
+  const clearResults = useCallback(() => {
+    setTestResults(null);
+    setSavedToDb(false);
+    setTestRunId(null);
+  }, []);
 
-    subscribe(eventType: TestEventType, callback: TestEventCallback): () => void {
-        if (!this.listeners.has(eventType)) {
-            this.listeners.set(eventType, new Set<TestEventCallback>());
-        }
-        const callbacks = this.listeners.get(eventType);
-        callbacks?.add(callback);
+  const clearTestRunId = useCallback(() => {
+    setTestRunId(null);
+  }, []);
 
-        return () => {
-            callbacks?.delete(callback);
-        };
-    },
-
-    emit(eventType: TestEventType, data: TestEventPayload): void {
-        if (this.listeners.has(eventType)) {
-            this.listeners.get(eventType)?.forEach(callback => {
-                try {
-                    callback(data);
-                } catch (err) {
-                    console.error('Error in test event listener:', err);
-                }
-            });
-        }
-    }
-};
-
-export function useTestLLM(blocks: Block[], projectId: string) {
-    const [isLoading, setIsLoading] = useState(false);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [testResults, setTestResults] = useState<any>(null);
-    const [testRunId, setTestRunId] = useState<string | null>(null);
-    const [resultId, setResultId] = useState<string | null>(null);
-    const [savedToDb, setSavedToDb] = useState(false);
-    const [isAutoLoaded, setIsAutoLoaded] = useState(false);
-    const [testDuration, setTestDuration] = useState<number | null>(null);
-    const [usingLocalFallback, setUsingLocalFallback] = useState(false);
-
-    const startTimeRef = useRef<number | null>(null);
-    const abortControllerRef = useRef<AbortController | null>(null);
-    const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-    const { status: sseStatus } = useSSE(projectId, testRunId);
-
-    useEffect(() => {
-        disableFileChecking();
-        return () => {
-            enableFileChecking();
-            if (pollTimerRef.current) {
-                clearTimeout(pollTimerRef.current);
-                pollTimerRef.current = null;
-            }
-            if (abortControllerRef.current) {
-                abortControllerRef.current.abort();
-                abortControllerRef.current = null;
-            }
-        };
-    }, []);
-
-    useEffect(() => {
-        if (!sseStatus) return;
-        console.log("[useTestLLM] SSE status update:", sseStatus);
-
-        if (sseStatus.status === 'running') {
-            setIsPlaying(true);
-            setIsLoading(true);
-            setError(null);
-        } else if (sseStatus.status === 'completed') {
-            setIsPlaying(false);
-            setIsLoading(false);
-            setError(null);
-            setTestResults(sseStatus.results);
-            setSavedToDb(true);
-            if (startTimeRef.current) {
-                const endTime = Date.now();
-                setTestDuration((endTime - startTimeRef.current) / 1000);
-            }
-        } else if (sseStatus.status === 'error' || sseStatus.status === 'aborted') {
-            setIsPlaying(false);
-            setIsLoading(false);
-            setError(sseStatus.error || 'Test failed');
-            if (startTimeRef.current) {
-                const endTime = Date.now();
-                setTestDuration((endTime - startTimeRef.current) / 1000);
-            }
-        }
-    }, [sseStatus]);
-
-    const resetStates = useCallback(() => {
-        console.log("[useTestLLM] Resetting states");
+  useEffect(() => {
+    if (!statusEvt) return;
+    switch (statusEvt.status) {
+      case "initializing":
+      case "queued":
+      case "running":
+        setIsPlaying(true);
+        setIsLoading(true);
+        setError(null);
+        break;
+      case "completed": {
         setIsPlaying(false);
         setIsLoading(false);
-    }, []);
-
-    const clearResults = useCallback(() => {
-        setTestResults(null);
-        setSavedToDb(false);
-        setIsAutoLoaded(false);
-        setTestDuration(null);
-        setTestRunId(null);  // Explicitly clear testRunId when clearing results
-    }, []);
-
-    const handleTest = useCallback(async () => {
-        if (isPlaying) {
-            console.log("Test already in progress");
-            return false;
+        setError(null);
+        const finalResults = statusEvt.results ?? DEFAULT_TEST_RESULTS;
+        setTestResults(finalResults);
+        if (!savedToDb) {
+          setSavedToDb(true);
+          const evalBlock = blocks.find(b => b.type === "evaluation-container");
+          const topics: string[] = evalBlock?.config?.topics || [];
+          testApiClient.saveResults(projectId, { topics, ...finalResults })
+            .catch(err => console.error("Failed to save results:", err));
         }
-        if (!blocks || blocks.length === 0) {
-            setError("No blocks to test");
-            return false;
-        }
-        try {
-            // Reset state and record start time.
-            setIsLoading(true);
-            setIsPlaying(true);
-            setError(null);
-            setTestResults(null);
-            setSavedToDb(false);
-            setIsAutoLoaded(false);
-            startTimeRef.current = Date.now();
+        testEvents.emit("testComplete", {
+          projectId, testId: testRunId!, results: statusEvt.results
+        });
+        break;
+      }
+      case "error":
+        setIsPlaying(false);
+        setIsLoading(false);
+        setError(statusEvt.error || "Test failed");
+        break;
+      case "aborted":
+        setIsPlaying(false);
+        setIsLoading(false);
+        setError("Test aborted");
+        break;
+    }
+  }, [statusEvt, projectId, testRunId, savedToDb, blocks]);
 
-            // Emit test start event BEFORE making network request
-            // This allows components to clear themselves immediately
-            testEvents.emit('testStart', {
-                projectId,
-                timestamp: Date.now()
-            } as TestStartPayload);
+  const handleTest = useCallback(async () => {
+    if (isPlaying) return false;
+    if (!blocks.length) {
+      setError("No blocks to test");
+      return false;
+    }
 
-            // --- Prepare FormData for the consolidated test endpoint ---
-            const formData = new FormData();
-            formData.append("blocks", JSON.stringify(blocks));
-            formData.append("project_id", projectId);
+    setIsLoading(true);
+    setIsPlaying(true);
+    setError(null);
+    clearResults();
+    startTimeRef.current = Date.now();
+    testEvents.emit("testStart", { projectId, timestamp: Date.now() });
 
-            const testCaseBlock = blocks.find(b => b.type === "test-case");
-            const shotType = testCaseBlock?.shotType
-                ? SHOT_TYPE_MAP[testCaseBlock.shotType] || "zero"
-                : "zero";
-            const template = testCaseBlock?.testCaseFormat
-                ? TEMPLATE_MAP[testCaseBlock.testCaseFormat] || "std"
-                : "std";
+    // 1) fetch the very latest project from your Next.js API
+    let latest: any = null;
+    try {
+      const resp = await fetch(`/api/projects/${projectId}`);
+      if (!resp.ok) throw new Error("Fetch failed");
+      latest = await resp.json();
+    } catch (err) {
+      console.warn("Could not fetch fresh project, falling back to state:", err);
+      latest = project;
+    }
 
-            const evaluationBlock = blocks.find(b => b.type === "evaluation-container");
-            const topics = JSON.stringify(evaluationBlock?.config?.topics || []);
+    // 2) pull parameters from that up-to-date object
+    const testCase = blocks.find(b => b.type === "test-case");
+    const shotType = testCase?.shotType ? SHOT_TYPE_MAP[testCase.shotType] : "zero";
+    const template = testCase?.testCaseFormat ? TEMPLATE_MAP[testCase.testCaseFormat] : "std";
+    const evalBlock = blocks.find(b => b.type === "evaluation-container");
+    const topics = evalBlock?.config?.topics || [];
+    const topicConfigs = evalBlock?.config?.topicConfigs;
+    const modelProvider = latest?.modelProvider;
+    const model = latest?.llm;
+    const url = latest?.url;
+    const apiKey = latest?.apiKey || undefined;
 
-            console.log(`Starting test with: shotType=${shotType}, template=${template}, topics=${topics}`);
-            formData.append("shot_type", shotType);
-            formData.append("template", template);
-            formData.append("topics", topics);
+    let systemPrompt: string | undefined;
+    if (latest?.systemPrompt) {
+      const sp = latest.systemPrompt;
+      systemPrompt = sp.type === "custom" ? sp.customPrompt : sp.defaultPrompt;
+    }
 
-            console.log("Starting test for project:", projectId);
+    console.log("🚀 Starting test with:", { modelProvider, model, url });
 
-            // Call the consolidated test endpoint
-            const startTestRes = await fetch(`/api/projects/${projectId}/test`, {
-                method: "POST",
-                body: formData,
-            });
+    try {
+      const resp = await testApiClient.startTest(projectId, {
+        blocks,
+        shotType,
+        template,
+        topics,
+        topicConfigs,
+        systemPrompt,
+        projectId,
+        projectType: project?.type || 'qa',
+        modelProvider,
+        model,
+        apiKey,
+        url,
+      });
+      setTestRunId(resp.testId);
+      return true;
+    } catch (e) {
+      setIsLoading(false);
+      setIsPlaying(false);
+      setError(e instanceof Error ? e.message : String(e));
+      return false;
+    }
+  }, [
+    isPlaying,
+    blocks,
+    projectId,
+    project,    // used as fallback
+    clearResults
+  ]);
 
-            if (!startTestRes.ok) {
-                const errorText = await startTestRes.text();
-                throw new Error(`Failed to start test: ${errorText}`);
-            }
+  const handleStop = useCallback(async () => {
+    if (!isPlaying || !testRunId) return;
+    try {
+      await testApiClient.abortTest(projectId, testRunId);
+      setIsPlaying(false);
+      setIsLoading(false);
+    } catch {
+      // ignore
+    }
+  }, [isPlaying, testRunId, projectId]);
 
-            // Parse response to get testId and resultId
-            const startTestData = await startTestRes.json();
-            setTestRunId(startTestData.testId);
-            setResultId(startTestData.resultId);
-            console.log("Test started with ID:", startTestData.testId);
-            console.log("Result document ID:", startTestData.resultId);
+  const fetchResultsFromDb = useCallback(async () => {
+    if (!projectId || !testRunId) return;
+    try {
+      setIsLoading(true);
+      const result = await testApiClient.getTestResults(projectId, testRunId);
+      if (result.results) {
+        setTestResults(result.results);
+        setSavedToDb(true);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [projectId, testRunId]);
 
-            return true;
-        } catch (err) {
-            setIsLoading(false);
-            setIsPlaying(false);
-            const errorMessage = err instanceof Error ? err.message : String(err);
-            setError(errorMessage);
-            console.error("Error starting test:", errorMessage);
-            return false;
-        }
-    }, [isPlaying, blocks, projectId]);
+  useEffect(() => {
+    if (projectId && !testResults && !isPlaying && testRunId) {
+      fetchResultsFromDb();
+    }
+  }, [projectId, testResults, isPlaying, testRunId, fetchResultsFromDb]);
 
-    // const handleStop = useCallback(async () => {
-    //     if (!isPlaying || !testRunId) {
-    //         console.log("No test running to stop");
-    //         return;
-    //     }
-
-    //     // Update UI state immediately
-    //     setIsPlaying(false);
-    //     setIsLoading(false);
-
-    //     console.log(`Stopping test: ${testRunId}`);
-
-    //     // Send abort request
-    //     try {
-    //         await fetch(`/api/projects/${projectId}/test`, {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify({
-    //                 action: 'update-status',
-    //                 testId: testRunId,
-    //                 status: 'aborted',
-    //                 progress: 'Test aborted by user'
-    //             }),
-    //         });
-    //     } catch (err) {
-    //         console.error("Error stopping test:", err);
-    //     }
-    // }, [isPlaying, testRunId, projectId]);
-
-    const clearTestRunId = useCallback(() => {
-        console.log("[useTestLLM] Clearing testRunId");
-        setTestRunId(null);
-    }, []);
-
-    const saveTestResults = useCallback(async (results: any) => {
-        if (!testRunId || !projectId) {
-            console.error("Cannot save results: missing testId or projectId");
-            return false;
-        }
-
-        try {
-            // Call the consolidated endpoint with action=save-results
-            const response = await fetch(`/api/projects/${projectId}/test`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'save-results',
-                    testId: testRunId,
-                    results: results
-                }),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Failed to save results: ${errorText}`);
-            }
-
-            setSavedToDb(true);
-            console.log("Test results saved successfully");
-            return true;
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : String(err);
-            console.error("Error saving test results:", errorMessage);
-            return false;
-        }
-    }, [testRunId, projectId]);
-
-    // Save results to database when received from SSE
-    useEffect(() => {
-        if (sseStatus?.status === 'completed' && sseStatus?.results && testRunId) {
-            saveTestResults(sseStatus.results);
-            // Ensure states are reset
-            resetStates();
-        } else if (sseStatus?.status === 'error' || sseStatus?.status === 'aborted') {
-            // Also reset states on error or abort
-            resetStates();
-        }
-    }, [sseStatus, testRunId, saveTestResults, resetStates]);
-
-    const fetchResultsFromDb = useCallback(async () => {
-        if (!projectId) return;
-        try {
-            setIsLoading(true);
-            // Use the consolidated endpoint GET method
-            const response = await fetch(`/api/projects/${projectId}/test`);
-
-            if (!response.ok) {
-                if (response.status === 404) {
-                    console.log("No previous results found");
-                    setTestResults(null);
-                    setSavedToDb(false);
-                } else {
-                    throw new Error(`Failed to fetch results: ${response.statusText}`);
-                }
-            } else {
-                const data = await response.json();
-                if (data && data.results && Object.keys(data.results).length > 0) {
-                    console.log("Loaded previous results from database");
-                    setTestResults(data.results);
-                    setSavedToDb(true);
-                    setIsAutoLoaded(true);
-                } else {
-                    setTestResults(null);
-                    setSavedToDb(false);
-                }
-            }
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : String(err);
-            console.error("Error fetching results:", errorMessage);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [projectId]);
-
-    useEffect(() => {
-        if (projectId && !testResults && !isPlaying) {
-            fetchResultsFromDb();
-        }
-    }, [projectId, testResults, isPlaying, fetchResultsFromDb]);
-
-    return {
-        isLoading,
-        isPlaying,
-        error,
-        testResults,
-        testRunId,
-        savedToDb,
-        isAutoLoaded,
-        usingLocalFallback,
-        testDuration,
-        handleTest,
-        // handleStop,
-        clearResults,
-        fetchResultsFromDb,
-        saveTestResults,
-        resetStates,
-        clearTestRunId
-    };
+  return {
+    isLoading,
+    isPlaying,
+    error,
+    testResults,
+    testRunId,
+    savedToDb,
+    handleTest,
+    handleStop,
+    clearResults,
+    clearTestRunId,
+  };
 }
+
+export default useTestLLM;

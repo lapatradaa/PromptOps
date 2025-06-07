@@ -1,17 +1,12 @@
-# api/Backend_v1/PromptOps/test.py
+# api/PromptOps/test.py
 
 from functools import wraps
-import json
 import random
 import socket
 import logging
 import time
 import litellm
-import openai
-import anthropic
-import google.generativeai as genai
 from sentence_transformers import SentenceTransformer
-from api.utils.abort_handler import check_abort
 import requests
 import numpy as np
 import threading
@@ -153,7 +148,7 @@ class PromptCompletion:
     def _log_rate_limit_status(self):
         """Log current rate limit status for this provider"""
         try:
-            from api.utils.model_rate_limits import MODEL_RATE_LIMITS
+            from ..utils.model_rate_limits import MODEL_RATE_LIMITS
 
             limits = MODEL_RATE_LIMITS.get(self.model_provider, {})
             if isinstance(limits, dict):
@@ -204,7 +199,8 @@ class PromptCompletion:
                 temperature=self.temperature,
                 top_p=self.top_p,
                 max_tokens=self.max_tokens,
-                stream=False  # No streaming support for simplicity
+                stream=False,  # No streaming support for simplicity
+                timeout=30
             )
 
             # Extract the response content

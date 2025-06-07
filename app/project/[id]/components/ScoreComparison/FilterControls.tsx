@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// app/project/[id]/components/ScoreComparison/FilterControls.tsx
+import React from "react";
 import styles from "./ScoreComparison.module.css";
 
 interface FilterControlsProps {

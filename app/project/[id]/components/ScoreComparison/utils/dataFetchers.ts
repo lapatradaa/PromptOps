@@ -1,4 +1,13 @@
-import { ModelSelection, ModelResultData, SHOT_TYPE_MAP, TEMPLATE_MAP } from "@/app/types";
+// app/project/[id]/components/ScoreComparison/utils/dataFetchers.ts
+import { 
+  ModelSelection, 
+  ModelResultData, 
+  SHOT_TYPE_MAP, 
+  TEMPLATE_MAP, 
+  TestResults, 
+  OverallScore, 
+  PerformanceScore 
+} from "@/app/types";
 
 /**
  * Fetches model results from the API and consolidates multiple results
@@ -10,98 +19,103 @@ export const fetchModelResults = async (
   selectedPerturbations?: string[]
 ): Promise<ModelResultData[]> => {
   try {
-    // Convert UI enums to API-friendly values
     const shotType = SHOT_TYPE_MAP[model.option];
     const formatType = TEMPLATE_MAP[model.format];
-
-    // Use the model value for API calls, not the display name
     const modelValue = model.model;
 
-    // Build the API URL with all filter parameters
-    let url = `/api/projects/${projectId}/model-results?model=${encodeURIComponent(modelValue)}&option=${encodeURIComponent(shotType)}&format=${encodeURIComponent(formatType)}`;
+    let url = `/api/projects/${projectId}/model-results`
+      + `?model=${encodeURIComponent(modelValue)}`
+      + `&option=${encodeURIComponent(shotType)}`
+      + `&format=${encodeURIComponent(formatType)}`
+      + `&all=true&raw=true`;
 
-    // Add provider if available
     if (model.provider) {
       url += `&provider=${encodeURIComponent(model.provider)}`;
     }
-
-    // Always include project type parameter if it's defined
     if (projectType) {
       url += `&projectType=${encodeURIComponent(projectType)}`;
     }
-
-    // Add perturbation types if selected (convert array to comma-separated string)
-    if (selectedPerturbations && selectedPerturbations.length > 0) {
+    if (selectedPerturbations?.length) {
       url += `&perturbationType=${encodeURIComponent(selectedPerturbations.join(','))}`;
     }
 
-    // Add raw=true to get all results without deduplication
-    url += '&all=true&raw=true';
+    const res = await fetch(url);
+    const data = await res.json();
 
-    // console.log("Fetching from API URL:", url);
-    const response = await fetch(url);
-    const data = await response.json();
+    if (res.status === 404) return [];
+    if (!res.ok) throw new Error(data.error || `Status ${res.status}`);
 
-    // Handle 404 errors gracefully - return empty array instead of throwing
-    if (response.status === 404) {
-      // console.log(`No data found for ${model.modelDisplay || model.model} with the selected filters: ${data.error}`);
-      return [];
-    }
+    const rawResults: any[] = data.rawResults || data.results || [];
+    if (!rawResults.length) return [];
 
-    if (!response.ok) {
-      console.error("API Error:", data.error);
-      throw new Error(data.error || `Error fetching results: ${response.status}`);
-    }
+    rawResults.sort(
+      (a, b) =>
+        new Date(b.createdAt || b.created_at || 0).getTime() -
+        new Date(a.createdAt || a.created_at || 0).getTime()
+    );
 
-    // Check if we got raw results directly or need to extract them
-    const rawResults = data.rawResults || data.results || [];
+    return rawResults.map((doc) => {
+      // Extract timestamp
+      const timestamp = new Date(doc.createdAt || doc.created_at || 0);
 
-    if (rawResults.length === 0) {
-      // console.log(`No data found for ${model.modelDisplay || model.model} with the selected filters`);
-      return [];
-    }
+      // Pull fields off doc.results, with sensible defaults
+      let tests: any[] = [];
+      let performance_score: PerformanceScore = { overall_performance_score: 0 };
+      let overall_score: OverallScore = {
+        overall_total_tests: 0,
+        overall_failures: 0,
+        overall_failure_rate: 0,
+        overall_pass: 0,
+        overall_pass_rate: 0,
+      };
+      let robust_results: any[] = [];
+      let index_scores: Record<string, number> = {};
 
-    // Sort results by date (newest first)
-    const sortedResults = [...rawResults].sort((a, b) => {
-      const dateA = new Date(a.createdAt || a.created_at || a.timestamp || 0);
-      const dateB = new Date(b.createdAt || b.created_at || b.timestamp || 0);
-      return dateB.getTime() - dateA.getTime();
-    });
+      if (Array.isArray(doc.results)) {
+        tests = doc.results;
+      } else if (typeof doc.results === "object" && doc.results !== null) {
+        const r = doc.results;
+        tests = Array.isArray(r.tests) ? r.tests : [];
+        performance_score = {
+          overall_performance_score: r.performance_score?.overall_performance_score ?? 0,
+          ... (r.performance_score || {})
+        };
+        overall_score = {
+          overall_total_tests: r.overall_score?.overall_total_tests ?? 0,
+          overall_failures: r.overall_score?.overall_failures ?? 0,
+          overall_failure_rate: r.overall_score?.overall_failure_rate ?? 0,
+          overall_pass: r.overall_score?.overall_pass ?? 0,
+          overall_pass_rate: r.overall_score?.overall_pass_rate ?? 0,
+        };
+        robust_results = Array.isArray(r.robust_results) ? r.robust_results : [];
+        index_scores =
+          typeof r.index_scores === "object" && r.index_scores !== null
+            ? r.index_scores
+            : {};
+      }
 
-    // Create a separate entry for each result with date-based names
-    const processedResults: ModelResultData[] = [];
+      const results: TestResults = {
+        tests,
+        performance_score,
+        overall_score,
+        robust_results,
+        index_scores,
+      };
 
-    sortedResults.forEach((result, index) => {
-      // Use the display name from ModelSelection if available, otherwise fall back to model value
-      const displayName = model.modelDisplay || model.model;
-
-      // Get the date from the result
-      const createdDate = new Date(result.createdAt || result.created_at || result.timestamp || 0);
-
-      // No version suffix in the model name - just use the display name
-      processedResults.push({
-        model: displayName,
-        modelValue: model.model, // Store original model value
+      return {
+        model: model.modelDisplay || model.model,
+        modelValue: model.model,
+        timestamp,
         provider: model.provider,
         option: model.option,
         format: model.format,
-        results: result.results,
+        results,
         perturbationTypes: selectedPerturbations || [],
-        raw: result,
-        // Add timestamp to make it available in other components if needed
-        timestamp: createdDate
-      });
+        raw: doc,
+      };
     });
-
-    return processedResults;
-  } catch (error) {
-    console.error("Error fetching model results:", error);
-    if (error instanceof Error &&
-      (error.message.includes("No results found for project type") ||
-        error.message.includes("No data available for project type"))) {
-      // console.log("Handling project type error gracefully");
-      return [];
-    }
+  } catch (err) {
+    console.error("Error fetching model results:", err);
     return [];
   }
 };

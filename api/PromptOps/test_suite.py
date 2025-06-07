@@ -1,4 +1,4 @@
-# api/Backend_v1/PromptOps/test_suite.py
+# api/PromptOps/test_suite.py
 import concurrent.futures
 import logging
 import os

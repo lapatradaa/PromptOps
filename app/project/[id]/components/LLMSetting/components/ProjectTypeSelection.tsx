@@ -1,3 +1,5 @@
+// app/project/[id]/components/LLMSetting/components/ProjectTypeSelection.tsx
+
 import React from 'react';
 import { ProjectType } from '@/app/types';
 import styles from '../LLMSetting.module.css';

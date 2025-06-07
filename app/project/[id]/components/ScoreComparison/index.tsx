@@ -1,3 +1,4 @@
+// app/project/[id]/components/ScoreComparison/index.tsx
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "./ScoreComparison.module.css";

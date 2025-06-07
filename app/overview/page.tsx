@@ -124,16 +124,19 @@ const Projects: React.FC = () => {
 
   const handleSignOutClick = async () => {
     setIsLoading(true);
+    const loadingToast = toast.loading('Signing out...');
     try {
-      const loadingToast = toast.loading('Signing out...');
+      // Redirect back to the current origin + /auth
+      const callbackUrl = `${window.location.origin}/auth`;
       await signOut({
         redirect: true,
-        callbackUrl: "/auth",
+        callbackUrl,
       });
+      // (Note: NextAuth will immediately navigate, so this may not fire.)
       toast.success('Signed out successfully', { id: loadingToast });
     } catch (error) {
       console.error("Sign out error:", error);
-      toast.error('Failed to sign out');
+      toast.error('Failed to sign out', { id: loadingToast });
       setIsLoading(false);
       setIsUserMenuOpen(false);
     }

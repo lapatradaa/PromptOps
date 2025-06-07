@@ -1,57 +1,50 @@
-// /app/api/projects/calculate-scores/route.ts
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from 'next/server';
+import { getFastApiUrl } from '@/lib/getFastApiUrl';
 
+/**
+ * POST /api/projects/calculate-scores
+ * Sends the incoming JSON to FastAPI → /calculate-scores
+ */
 export async function POST(req: NextRequest) {
-    try {
-        let data;
-        try {
-            data = await req.json();
-        } catch (parseError) {
-            console.error("Failed to parse request JSON:", parseError);
-            return NextResponse.json(
-                { error: "Invalid JSON payload" },
-                { status: 400 }
-            );
-        }
+  try {
+    const data = await req.json();
 
-        // Safety check
-        if (!data) {
-            console.error("Data is null or undefined");
-            return NextResponse.json(
-                { error: "Empty request body" },
-                { status: 400 }
-            );
-        }
-
-        // console.log("POST /calculate-scores - Data:", typeof data, data ? Object.keys(data) : "NO DATA");
-
-        // Call FastAPI backend
-        const response = await fetch("http://127.0.0.1:5328/calculate-scores", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || ''
-            },
-            body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("FastAPI error response:", errorText);
-            throw new Error(`FastAPI error: ${errorText}`);
-        }
-
-        const result = await response.json();
-        return NextResponse.json(result);
-    } catch (error) {
-        console.error("Detailed error in /calculate-scores:", error);
-        return NextResponse.json(
-            {
-                error: "Failed to compute scores",
-                message: error instanceof Error ? error.message : String(error),
-                stack: error instanceof Error ? error.stack : undefined
-            },
-            { status: 500 }
-        );
+    if (!data) {
+      return NextResponse.json(
+        { error: 'Empty request body' },
+        { status: 400 },
+      );
     }
+
+    const fastApiUrl = getFastApiUrl();
+    const apiRes = await fetch(`${fastApiUrl}/calculate-scores`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': process.env.NEXT_PUBLIC_API_KEY ?? '',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!apiRes.ok) {
+      const details = await apiRes.text();
+      console.error('FastAPI error response:', details);
+      return NextResponse.json(
+        { error: 'FastAPI Error', details },
+        { status: apiRes.status },
+      );
+    }
+
+    const result = await apiRes.json();
+    return NextResponse.json(result);
+  } catch (err) {
+    console.error('Error in /calculate-scores:', err);
+    return NextResponse.json(
+      {
+        error: 'Failed to compute scores',
+        message: err instanceof Error ? err.message : String(err),
+      },
+      { status: 500 },
+    );
+  }
 }

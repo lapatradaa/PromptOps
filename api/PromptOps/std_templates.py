@@ -1,13 +1,19 @@
+# api/PromptOps/std_templates.py
 import pandas as pd
 import pickle
 from ..PromptOps.perturb import Perturbation
 
 
-class ICQATemplateFormatter:
-    def __init__(self, filepath):
+class ShotTemplateFormatter:
+    def __init__(self, filepath, project_type=None):
         self.filepath = filepath
+        self.project_type = project_type
         self.df = self.load_data()
         self.perturb = Perturbation()  # Initialize the perturbation class
+
+    def set_project_type(self, project_type):
+        """Set the project type (e.g., 'sentiment', 'qa')"""
+        self.project_type = project_type
 
     def load_data(self):
         """
@@ -41,9 +47,7 @@ class ICQATemplateFormatter:
         Apply perturbation to the question based on the perturbation type.
         """
         perturb_type = perturb_type.lower().strip()
-        if perturb_type == 'robust':
-            return question  # For robust, specific perturbations are expected from the data
-        elif perturb_type == 'taxonomy':
+        if perturb_type == 'taxonomy':
             return self.perturb.taxonomy(question)
         elif perturb_type == 'negation':
             return self.perturb.negation(question)
@@ -69,10 +73,9 @@ class ICQATemplateFormatter:
         """
         Format zero-shot template with optional perturbation for the main question.
         """
-
         if perturb_type == 'robust':
-            original = f"{row['Prefix']}\nContext: {row['Context']}\nQuestion: {row['Original_Question']}\n"
-            perturbed = f"{row['Prefix']}\nContext: {row['Context']}\nQuestion: {row['Perturbed_Question']}\n"
+            original = f"{row['Prefix']}\n{row['Original_Question']}"
+            perturbed = f"{row['Prefix']}\n{row['Perturbed_Question']}"
             return {
                 "Original_Question_Index": row['Original_Question_Index'],
                 "original_prompt": original,
@@ -85,12 +88,11 @@ class ICQATemplateFormatter:
             question = row['Question']
             if perturb_type:
                 question = self.perturb_question(question, perturb_type)
-            # original = f"Instruction: {row['Instruction']}\nContext: {row['Context']}\nQ: {row['Question']}\nA:"
-            # perturbed = f"Instruction: {row['Instruction']}\nContext: {row['Context']}\nQ: {question}\nA:"
-
-            original = f"{row['Prefix']}\nContext: {row['Context']}\n{row['Question']}"
-            perturbed = f"{row['Prefix']}\nContext: {row['Context']}\n{question}"
-
+            elif 'Perturbed' in row and row['Perturbed']:
+                question = row['Perturbed']
+            
+            original = f"{row['Prefix']}\n{row['Question']}"
+            perturbed = f"{row['Prefix']}\n{question}"
             return {
                 "original_prompt": original,
                 "perturb_prompt": perturbed,
@@ -102,12 +104,9 @@ class ICQATemplateFormatter:
         """
         Format one-shot template with optional perturbation for the main question.
         """
-
         if perturb_type == 'robust':
-            # original = f"Instruction: {row['Instruction']}\nContext: {row['Context']}\nQ: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {row['Original_Question']}\nA:"
-            # perturbed = f"Instruction: {row['Instruction']}\nContext: {row['Context']}\nQ: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {row['Perturbed_Question']}\nA:"
-            original = f"{row['Prefix']}\nContext: {row['Context']}\nQuestion: {row['Original_Question']}\n"
-            perturbed = f"{row['Prefix']}\nContext: {row['Context']}\nQuestion: {row['Perturbed_Question']}\n"
+            original = f"{row['Prefix']}\n{row['Original_Question']}"
+            perturbed = f"{row['Prefix']}\n{row['Perturbed_Question']}"
             return {
                 "Original_Question_Index": row['Original_Question_Index'],
                 "original_prompt": original,
@@ -120,11 +119,9 @@ class ICQATemplateFormatter:
             question = row['Question']
             if perturb_type:
                 question = self.perturb_question(question, perturb_type)
-            # original = f"Instruction: {row['Instruction']}\nContext: {row['Context']}\nQ: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {row['Question']}\nA:"
-            # perturbed = f"Instruction: {row['Instruction']}\nContext: {row['Context']}\nQ: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {question}\nA:"
-
-            original = f"{row['Prefix']}\nContext: {row['Context']}\n{row['Question']}"
-            perturbed = f"{row['Prefix']}\nContext: {row['Context']}\n{question}"
+            
+            original = f"{row['Prefix']}\n{row['Question']}"
+            perturbed = f"{row['Prefix']}\n{question}"
 
             return {
                 "original_prompt": original,
@@ -137,17 +134,9 @@ class ICQATemplateFormatter:
         """
         Format few-shot template with optional perturbation for the main question.
         """
-
         if perturb_type == 'robust':
-            question = row['Perturbed_Question']
-            few_shot_context = f"Instruction: {row['Instruction']}\nContext: {row['Context']}\n"
-            for i in range(1, len(row)//2):  # Assuming paired Question_X and Answer_X columns
-                if f'Question_{i}' in row and f'Answer_{i}' in row:
-                    few_shot_context += f"Q: {row[f'Question_{i}']}\nA: {row[f'Answer_{i}']}\n\n"
-
-            original = f"{row['Prefix']}\nContext: {row['Context']}\nQuestion: {row['Original_Question']}\n"
-            perturbed = f"{row['Prefix']}\nContext: {row['Context']}\nQuestion: {row['Perturbed_Question']}\n"
-
+            original = f"{row['Prefix']}\n{row['Original_Question']}"
+            perturbed = f"{row['Prefix']}\n{row['Perturbed_Question']}"
             return {
                 "Original_Question_Index": row['Original_Question_Index'],
                 "original_prompt": original,
@@ -161,17 +150,9 @@ class ICQATemplateFormatter:
             if perturb_type:
                 question = self.perturb_question(question, perturb_type)
 
-            # few_shot_context = f"Instruction: {row['Instruction']}\nContext: {row['Context']}\n"
-            # for i in range(1, len(row)//2):  # Assuming paired Question_X and Answer_X columns
-            #     if f'Question_{i}' in row and f'Answer_{i}' in row:
-            #         few_shot_context += f"Q: {row[f'Question_{i}']}\nA: {row[f'Answer_{i}']}\n\n"
-
-            # original = f"{few_shot_context}Q: {row['Question']}\nA:"
-            # perturbed = f"{few_shot_context}Q: {question}\nA:"
-
-            original = f"{row['Prefix']}\nContext: {row['Context']}\n{row['Question']}"
-            perturbed = f"{row['Prefix']}\nContext: {row['Context']}\n{question}"
-
+            original = f"{row['Prefix']}\n{row['Question']}"
+            perturbed = f"{row['Prefix']}\n{question}"
+            
             return {
                 "original_prompt": original,
                 "perturb_prompt": perturbed,
@@ -206,3 +187,4 @@ class ICQATemplateFormatter:
         """
         df = pd.DataFrame(formatted_data)
         df.to_csv(output_filepath, index=False)
+        return output_filepath  # Return path for consistency

@@ -1,3 +1,5 @@
+// app/project/[id]/components/LLMSetting/components/SystemPromptSection.tsx
+
 import React from 'react';
 import { SystemPrompt, SystemPromptType } from '@/app/types';
 import styles from '../LLMSetting.module.css';

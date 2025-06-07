@@ -1,0 +1,99 @@
+version: "3.9"
+volumes:
+  test-data:
+  certbot-etc:
+  certbot-var:
+  webroot:
+services:
+  celery-worker:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    depends_on:
+      - redis
+    command: >
+      celery -A api.services.test_processor.celery_app
+      worker --loglevel=warning --concurrency=2 --max-memory-per-child=512000
+    volumes:
+      - test-data:/data
+    environment:
+      SHARED_DATA_DIR: /data
+    restart: always
+  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  core:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    volumes:
+      - test-data:/data
+    ports:
+      - "5328:5328"
+    env_file:
+      - ./api/.env
+    environment:
+      SHARED_DATA_DIR: /data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5328/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - redis
+      - celery-worker
+  
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile.nextjs
+      args:
+        FASTAPI_URL: http://core:5328
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production
+    depends_on:
+      - core
+      - redis
+  
+  nginx:
+    image: nginx:1.25-alpine
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+      - webroot:/var/www/html:rw
+      - certbot-etc:/etc/letsencrypt:ro
+      - certbot-var:/var/lib/letsencrypt:rw
+    ports:
+      - "80:80"
+      - "443:443"
+    command: "/bin/sh -c 'nginx -g \"daemon off;\"'"
+    depends_on:
+      - nextjs
+      - core
+    restart: unless-stopped
+  
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - webroot:/var/www/html
+    command: certonly --webroot --webroot-path=/var/www/html --register-unsafely-without-email --agree-tos --no-eff-email --force-renewal -n -d 45.144.167.21.sslip.io
+    depends_on:
+      - nginx
+
+networks:
+  default:
+    name: app-network
+    driver: bridge

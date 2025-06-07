@@ -1,30 +1,22 @@
+// next.config.js
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Add environment variables
+  reactStrictMode: true,
+
+  // Build-time environment vars for the browser
   env: {
     MONGODB_URI: process.env.MONGODB_URI,
     JWT_SECRET: process.env.JWT_SECRET,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    NEXT_PUBLIC_FASTAPI_URL: process.env.NEXT_PUBLIC_FASTAPI_URL,
+    NEXT_PUBLIC_API_KEY: process.env.NEXT_PUBLIC_API_KEY,
+    FASTAPI_URL: process.env.FASTAPI_URL,
   },
-  // Updated rewrites configuration
-  rewrites: async () => {
-    return [
-      // Skip auth routes by only targeting specific API paths you want to forward to Flask
-      // Add your specific Flask API routes here
-      {
-        source: '/api/signin',
-        destination: 'http://127.0.0.1:5328/api/signin'
-      },
-      {
-        source: '/api/signup',
-        destination: 'http://127.0.0.1:5328/api/signup'
-      },
-      {
-        source: '/api/verify',
-        destination: 'http://127.0.0.1:5328/api/verify'
-      }
-    ]
-  },
-  // Keep existing webpack configuration
+
+  rewrites: async () => [
+  ],
+
   webpack: (config, { dev }) => {
     if (dev) {
       config.cache = false

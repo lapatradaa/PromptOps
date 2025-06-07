@@ -1,17 +1,18 @@
-// app/api/projects/[projectId]/custom-models/route.ts
-import { NextResponse } from 'next/server';
+// app/api/projects/[id]/custom-models/route.ts
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from "next-auth/next";
 import clientPromise from '@/lib/mongodb';
 import { authOptions } from '@/lib/auth';
 
 export async function GET(
-  req: Request,
-  { params }: { params: { projectId: string } }
-) {
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
     const client = await clientPromise;
@@ -21,7 +22,8 @@ export async function GET(
     const customModels = await db.collection("result")
       .find({
         userId: session.user.id,
-        modelProvider: 'custom'
+        modelProvider: 'custom',
+        projectId: id,
       })
       .project({ modelName: 1 })
       .toArray();

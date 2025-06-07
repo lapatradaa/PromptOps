@@ -8,14 +8,6 @@ export const getPerturbationDisplayName = (perturbation: string): string => {
     const perturbationMap: Record<string, string> = {
         'robust': 'Robustness',
         'vocab': 'Vocabulary',
-        // 'neg': 'Negation',
-        // 'coref': 'Coreference',
-        // 'fair': 'Fairness',
-        // 'logic': 'Logic',
-        // 'ner': 'NER',
-        // 'srl': 'SRL',
-        // 'tax': 'Taxonomy',
-        // 'temp': 'Temporal',
     };
 
     // Return the mapped name if available, otherwise use the original with first letter capitalized

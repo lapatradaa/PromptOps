@@ -1,4 +1,3 @@
-// middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
@@ -20,6 +19,7 @@ export async function middleware(request: NextRequest) {
   // Protect routes
   else if (PROTECTED_PATHS.some((path) => pathname.startsWith(path))) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+
     if (token) {
       response = NextResponse.next();
     } else {
@@ -44,10 +44,15 @@ export async function middleware(request: NextRequest) {
     response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
 
-  // Basic CSP - can be expanded based on your needs
+  // Content Security Policy - includes YouTube support
   response.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://s.ytimg.com; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: https:; " +
+    "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; " +
+    "connect-src 'self' https://www.youtube.com;"
   );
 
   return response;

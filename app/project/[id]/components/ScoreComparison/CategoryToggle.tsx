@@ -1,4 +1,4 @@
-// /ScoreComparison/CategoryToggle.tsx
+// app/project/[id]/components/ScoreComparison/CategoryToggle.tsx
 import React from "react";
 import styles from "./ScoreComparison.module.css";
 import { TopicType } from "@/app/types";

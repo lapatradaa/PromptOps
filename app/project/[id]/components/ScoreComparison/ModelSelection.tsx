@@ -1,3 +1,4 @@
+// app/project/[id]/components/ScoreComparison/ModelSelection.tsx
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./ScoreComparison.module.css";
 import { FaRegTrashAlt, FaChevronDown, FaChevronUp } from "react-icons/fa";

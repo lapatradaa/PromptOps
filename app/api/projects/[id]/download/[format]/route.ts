@@ -26,12 +26,10 @@ function getContentTypeForFormat(format: string): string {
  */
 export async function HEAD(
   request: NextRequest,
-  { params }: { params: { id: string; format: string } }
+  { params }: { params: Promise<{ id: string; format: string }> }
 ) {
   try {
-    const resolvedParams = await params;
-    const id = resolvedParams.id;
-    const format = resolvedParams.format;
+    const { id, format } = await params;
 
     // Validate format
     if (!['json', 'csv', 'xlsx'].includes(format)) {
@@ -84,13 +82,11 @@ export async function HEAD(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string; format: string } }
+  { params }: { params: Promise<{ id: string; format: string }> }
 ) {
   try {
     // Await the params before using them
-    const resolvedParams = await params;
-    const id = resolvedParams.id;
-    const format = resolvedParams.format;
+    const { id, format } = await params;
 
     // console.log(`[API] Downloading ${format} results for project ${id}`);
 
@@ -163,52 +159,6 @@ export async function GET(
 
     // Convert the results to the requested format
     const contentType = getContentTypeForFormat(format);
-
-    // if (format.toLowerCase() === 'csv') {
-    //   console.log('==================== CSV DEBUG START ====================');
-    //   console.log('Function location:', __filename);
-
-    //   // Log the top-level structure
-    //   console.log('Top-level keys:', Object.keys(resultData));
-
-    //   // Check for tests array
-    //   console.log('Has tests property:', resultData.hasOwnProperty('tests'));
-    //   console.log('Tests is array:', Array.isArray(resultData.tests));
-    //   console.log('Tests array length:', resultData.tests ? resultData.tests.length : 0);
-
-    //   // Check for other potential structures
-    //   if (resultData.tests && resultData.tests.length > 0) {
-    //     console.log('First test object keys:', Object.keys(resultData.tests[0]));
-    //     console.log('First test sample:', JSON.stringify(resultData.tests[0]).substring(0, 200) + '...');
-    //   }
-
-    //   // Look for other potential arrays
-    //   for (const key of Object.keys(resultData)) {
-    //     if (Array.isArray(resultData[key]) && resultData[key].length > 0) {
-    //       console.log(`Found array in '${key}' with ${resultData[key].length} items`);
-    //       if (resultData[key].length > 0) {
-    //         console.log(`First item in '${key}' array has keys:`, Object.keys(resultData[key][0]));
-    //       }
-    //     }
-    //   }
-
-    //   // Check for overall scores
-    //   if (resultData.overall_score) {
-    //     console.log('Overall score keys:', Object.keys(resultData.overall_score));
-    //   }
-
-    //   // Check for robust results
-    //   if (resultData.robust_results) {
-    //     console.log('Has robust_results:', !!resultData.robust_results);
-    //     console.log('Robust results length:', Array.isArray(resultData.robust_results) ? resultData.robust_results.length : 'not an array');
-    //   }
-
-    //   // Add a sample of the raw data (truncated to avoid huge logs)
-    //   const dataStr = JSON.stringify(resultData);
-    //   console.log('Raw data sample (truncated):', dataStr.substring(0, 500) + (dataStr.length > 500 ? '...' : ''));
-
-    //   console.log('==================== CSV DEBUG END ====================');
-    // }
 
     let content: string | ArrayBuffer;
 
@@ -342,7 +292,3 @@ export async function GET(
     );
   }
 }
-
-// Add compatibility route for the old endpoint path
-export const GET_downloadResultsCompat = GET;
-export const HEAD_downloadResultsCompat = HEAD;

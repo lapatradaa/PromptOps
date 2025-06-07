@@ -9,7 +9,7 @@ interface DashboardHandlerProps {
   applicabilityResults?: any;
   fileName?: string;
   projectId?: string;
-  testId?: string; // NEW: Unique test identifier to detect a new test run
+  testId?: string; 
   onClose?: () => void;
   isVisible?: boolean;
   initialViewMode?: 'applicability' | 'results';
@@ -21,7 +21,7 @@ const DashboardHandler: React.FC<DashboardHandlerProps> = ({
   applicabilityResults,
   fileName,
   projectId,
-  testId, // NEW prop
+  testId,
   onClose,
   isVisible = false,
   initialViewMode = 'results',

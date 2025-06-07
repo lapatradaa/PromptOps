@@ -1,3 +1,4 @@
+// lib/auth.ts
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
@@ -33,13 +34,11 @@ export const authOptions: NextAuthOptions = {
                         return null;
                     }
 
-                    // console.log("User successfully authorized:", {
-                    //     id: user._id.toString(),
-                    //     username: user.username,
-                    //     email: user.email,
-                    // });
-
-                    return { id: user._id.toString(), username: user.username };
+                    return {
+                        id: user._id.toString(),
+                        username: user.username,
+                        email: user.email
+                    };
                 } catch (error) {
                     console.error("Error in authorize:", error);
                     return null;
@@ -54,24 +53,50 @@ export const authOptions: NextAuthOptions = {
     jwt: {
         secret: process.env.NEXTAUTH_SECRET,
     },
+    cookies: {
+        sessionToken: {
+            name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+            options: {
+                httpOnly: true,
+                sameSite: 'lax',
+                path: '/',
+                secure: process.env.NODE_ENV === 'production'
+            }
+        }
+    },
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
                 token.username = user.username;
-                token.email = user.email; // Include email for consistency
+                token.email = user.email;
             }
             return token;
         },
         async session({ session, token }) {
             if (session.user) {
-                session.user.id = token.id;
-                session.user.username = token.username;
-                session.user.email = token.email; // Include email in the session
+                session.user.id = token.id as string;
+                session.user.username = token.username as string;
+                session.user.email = token.email as string;
             }
             return session;
         },
-    },
+        async redirect({ url, baseUrl }) {
+            // For development, don't replace localhost
+            if (process.env.NODE_ENV === 'development') {
+                return url;
+            }
 
-    debug: process.env.NODE_ENV === "development", // Enable debug in development
+            // For production, handle domain replacement
+            if (url.includes('localhost')) {
+                return url.replace('localhost:3000', '45.144.167.21.sslip.io');
+            }
+
+            // Handle other redirects
+            return url.startsWith(baseUrl)
+                ? url
+                : baseUrl + url.substring(url.indexOf('/', 8));
+        }
+    },
+    debug: process.env.NODE_ENV === "development",
 };

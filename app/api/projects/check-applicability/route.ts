@@ -1,38 +1,39 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
+import { getFastApiUrl } from '@/lib/getFastApiUrl';
 
-export async function POST(request: Request) {
-    try {
-        // 1) Read incoming data
-        const body = await request.json();
+/**
+ * POST /api/projects/check-applicability
+ * Proxy the request body to FastAPI → /applicability
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
 
-        // 2) Forward to FastAPI endpoint
-        const fastapiUrl = 'http://127.0.0.1:5328/applicability';
-        const fastapiResponse = await fetch(fastapiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || ''
-            },
-            body: JSON.stringify(body),
-        });
+    const fastApiUrl = getFastApiUrl();
+    const apiRes = await fetch(`${fastApiUrl}/api/v1/applicability`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': process.env.NEXT_PUBLIC_API_KEY ?? '',
+      },
+      body: JSON.stringify(body),
+    });
 
-        // If error
-        if (!fastapiResponse.ok) {
-            const errorBody = await fastapiResponse.text();
-            return NextResponse.json(
-                { error: 'FastAPI Error', details: errorBody },
-                { status: fastapiResponse.status }
-            );
-        }
-
-        // 3) Return FastAPI's response to the front-end
-        const fastapiData = await fastapiResponse.json();
-        return NextResponse.json(fastapiData);
-    } catch (error) {
-        console.error('Error in API:', error);
-        return NextResponse.json(
-            { error: 'Internal Server Error' },
-            { status: 500 }
-        );
+    if (!apiRes.ok) {
+      const details = await apiRes.text();
+      return NextResponse.json(
+        { error: 'FastAPI Error', details },
+        { status: apiRes.status },
+      );
     }
+
+    const data = await apiRes.json();
+    return NextResponse.json(data);
+  } catch (err) {
+    console.error('Error in /check-applicability:', err);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 },
+    );
+  }
 }

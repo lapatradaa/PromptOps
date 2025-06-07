@@ -1,4 +1,4 @@
-// @/app/project/[id]/page.tsx
+// app/project/[id]/page.tsx
 "use client"
 
 import React, { useCallback, useEffect, useState, useRef, use } from 'react';
@@ -11,6 +11,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { RiOrganizationChart } from 'react-icons/ri';
 import { FaBrain } from 'react-icons/fa';
 import { MdStackedBarChart } from 'react-icons/md';
+import { IoMdHelpCircle } from 'react-icons/io';
 
 // Components
 import Header from './components/Header';
@@ -18,12 +19,13 @@ import ProjectBoard from './components/ProjectBoard';
 import SecondaryMenu from './components/SecondaryMenu';
 import LLMSetting from './components/LLMSetting';
 import ScoreComparison from './components/ScoreComparison';
-import DeferredSSEConnector from './components/DeferredSSEConnector';
+import Tutorial from './components/Tutorial';
 import DashboardHandler from './components/Dashboard/DashboardHandler';
+import TestStatus from './components/TestStatus';
 
 // Hooks
 import { useBlockUpdates } from './hooks/useBlockUpdates';
-import { useTestLLM } from './hooks/useTestLLM'; // Updated hook with SSE
+import { useTestLLM } from './hooks/useTestLLM';
 import { useProject } from './hooks/useProject';
 
 // Utils
@@ -31,361 +33,220 @@ import { getMissingBlocksMessage, validateBlocks } from './components/ProjectBoa
 
 // Types
 import { MenuType, BlockRequirement } from '@/app/types';
+import { getInitialRequirements } from '@/app/types/blockRequirements';
 
 // Styles
 import styles from './project.module.css';
-import { getInitialRequirements } from '@/app/types/blockRequirements';
 
 // Menu Options Configuration
 const MENU_OPTIONS = [
-    {
-        id: 'options' as MenuType,
-        icon: <RiOrganizationChart />,
-        className: styles.optionsMenu
-    },
-    {
-        id: 'llm' as MenuType,
-        icon: <FaBrain />,
-        className: styles.llmMenu
-    },
-    {
-        id: 'chart' as MenuType,
-        icon: <MdStackedBarChart />,
-        className: styles.chartMenu
-    }
+  { id: 'options' as MenuType, icon: <RiOrganizationChart />, className: styles.optionsMenu },
+  { id: 'llm' as MenuType, icon: <FaBrain />, className: styles.llmMenu },
+  { id: 'chart' as MenuType, icon: <MdStackedBarChart />, className: styles.chartMenu },
+  { id: 'tutorial' as MenuType, icon: <IoMdHelpCircle />, className: styles.tutorialMenu }
 ];
 
 // Drag Layer Monitor Component
-const DragLayerMonitor: React.FC<{ onDragChange: (isDragging: boolean) => void }> = ({ onDragChange }) => {
-    const isDragging = useDragLayer((monitor) =>
-        monitor.isDragging() && monitor.getItemType() === 'PLACED_BLOCK'
-    );
-
-    useEffect(() => {
-        onDragChange(isDragging);
-    }, [isDragging, onDragChange]);
-
-    return null;
+type DragLayerMonitorProps = { onDragChange: (isDragging: boolean) => void };
+const DragLayerMonitor: React.FC<DragLayerMonitorProps> = ({ onDragChange }) => {
+  const isDragging = useDragLayer(monitor =>
+    monitor.isDragging() && monitor.getItemType() === 'PLACED_BLOCK'
+  );
+  useEffect(() => {
+    onDragChange(isDragging);
+  }, [isDragging, onDragChange]);
+  return null;
 };
 
-// Main Project Page Component
 const ProjectPage = ({ params }: { params: Promise<{ id: string }> }) => {
-    // Resolve params
-    const resolvedParams = use(params);
-    const searchParams = useSearchParams();
+  const { id: projectId } = use(params);
+  const searchParams = useSearchParams();
 
-    // State Management
-    const [activeMenu, setActiveMenu] = useState<MenuType>(null);
-    const [isDraggingBlock, setIsDraggingBlock] = useState(false);
-    const [applicabilityResults, setApplicabilityResults] = useState<any>(null);
-    const [dashboardMode, setDashboardMode] = useState<'applicability' | 'results'>('results');
-    const [projectType, setProjectType] = useState<string>('qa');
-    const [sseStatus, setSSEStatus] = useState<any>(null);
-    const [buttonPulsing, setButtonPulsing] = useState(false);
-    const [showSSEConnector, setShowSSEConnector] = useState(false);
-    const [testAttemptedWithMissingBlocks, setTestAttemptedWithMissingBlocks] = useState(false);
+  // UI state
+  const [activeMenu, setActiveMenu] = useState<MenuType>(null);
+  const [isDraggingBlock, setIsDraggingBlock] = useState(false);
+  const [applicabilityResults, setApplicabilityResults] = useState<any>(null);
+  const [dashboardMode, setDashboardMode] = useState<'applicability' | 'results'>('results');
+  const [projectType, setProjectType] = useState<string>('qa');
+  const [buttonPulsing, setButtonPulsing] = useState(false);
+  const [showTestStatus, setShowTestStatus] = useState(false);
+  const [testAttemptedWithMissingBlocks, setTestAttemptedWithMissingBlocks] = useState(false);
 
-    // Ref for board container to force rerender on menu changes
-    const boardContainerRef = useRef<HTMLDivElement>(null);
+  const boardContainerRef = useRef<HTMLDivElement>(null);
 
-    // Custom Hooks
-    const { project, isLoading: projectLoading } = useProject(resolvedParams.id);
-    const {
-        blocks,
-        handleBlocksUpdate,
-    } = useBlockUpdates([]);
+  // Load project & blocks
+  const { project } = useProject(projectId);
+  const { blocks, handleBlocksUpdate } = useBlockUpdates([]);
 
-    // Update project type when project changes
-    useEffect(() => {
-        if (project?.type) {
-            setProjectType(project.type);
-        }
-    }, [project]);
+  // Sync project type
+  useEffect(() => {
+    if (project?.type) setProjectType(project.type);
+  }, [project]);
 
-    // Handle project type change from LLMSetting
-    const handleProjectTypeChange = useCallback(async (newType: string) => {
-        setProjectType(newType);
-        // Clear existing blocks when project type changes
-        handleBlocksUpdate([], 0);
-    }, [handleBlocksUpdate]);
+  const handleProjectTypeChange = useCallback((newType: string) => {
+    setProjectType(newType);
+    handleBlocksUpdate([], 0);
+  }, [handleBlocksUpdate]);
 
-    const [blockValidationResult, setBlockValidationResult] = useState({
-        isComplete: false,
-        missingBlocks: [] as BlockRequirement[]
+  // Validate blocks
+  const [blockValidationResult, setBlockValidationResult] = useState({ isComplete: false, missingBlocks: [] as BlockRequirement[] });
+  useEffect(() => {
+    if (blocks.length) {
+      setBlockValidationResult(validateBlocks(blocks, projectType));
+    } else {
+      setBlockValidationResult({ isComplete: false, missingBlocks: getInitialRequirements(projectType) });
+    }
+  }, [blocks, projectType]);
+
+  // Test logic
+  const {
+    isPlaying,
+    error,
+    testResults,
+    testRunId,
+    handleTest,
+    clearResults,
+    // resetStates,
+    clearTestRunId
+  } = useTestLLM({ blocks, projectId, project });
+
+  // Show/hide TestStatus component
+  useEffect(() => {
+    if (testRunId) setShowTestStatus(true);
+  }, [testRunId]);
+
+  // Clean up on test end
+  useEffect(() => {
+    if (!isPlaying) {
+      setButtonPulsing(false);
+      clearTestRunId();
+    }
+  }, [isPlaying, clearTestRunId]);
+
+  // Menu & drag handlers
+  const handleMenuClick = useCallback((menuId: MenuType) => {
+    setActiveMenu(prev => {
+      const next = prev === menuId ? null : menuId;
+      setTimeout(() => boardContainerRef.current?.dispatchEvent(new Event('resize')), 50);
+      return next;
     });
+  }, []);
 
-    useEffect(() => {
-        if (blocks && blocks.length > 0) {
-            const validation = validateBlocks(blocks, projectType);
-            setBlockValidationResult(validation);
-        } else {
-            // Get requirements from the centralized source
-            const initialRequirements = getInitialRequirements(projectType);
+  const handleDragChange = useCallback(setIsDraggingBlock, []);
 
-            setBlockValidationResult({
-                isComplete: false,
-                missingBlocks: initialRequirements
-            });
-        }
-    }, [blocks, projectType]);
+  // Play button handler
+  const handlePlayClick = useCallback(async () => {
+    if (!blockValidationResult.isComplete) {
+      toast.error(getMissingBlocksMessage(blockValidationResult), { duration: 4000 });
+      if (blocks.length) {
+        setTestAttemptedWithMissingBlocks(true);
+        setTimeout(() => setTestAttemptedWithMissingBlocks(false), 5000);
+      }
+      return;
+    }
 
-    // Get test hook including SSE status
-    const {
-        isPlaying,
-        error,
-        testResults,
-        testRunId,
-        handleTest,
-        // handleStop,
-        clearResults,
-        resetStates,
-        clearTestRunId
-    } = useTestLLM(blocks, resolvedParams.id);
+    setButtonPulsing(true);
+    clearResults();
+    const started = await handleTest();
+    if (!started) {
+      setButtonPulsing(false);
+    }
+  }, [blockValidationResult, blocks, handleTest, clearResults]);
 
-    // Handle SSE status changes
-    const handleSSEStatusChange = useCallback((status: any) => {
-        console.log("SSE Status update:", status);
-        setSSEStatus(status);
+  // Dashboard toggle
+  const handleShowDashboard = useCallback((mode: 'applicability' | 'results') => {
+    if (activeMenu === 'dashboard') {
+      setDashboardMode(mode);
+    } else {
+      setDashboardMode(mode);
+      setTimeout(() => setActiveMenu('dashboard'), 0);
+    }
+  }, [activeMenu]);
 
-        // When the test completes or errors, ensure states are reset
-        if (status.type === 'completed' || status.type === 'error' || status.type === 'aborted') {
-            resetStates();
-            // Explicitly stop the button from pulsing
-            setButtonPulsing(false);
+  const projectName = project?.name || decodeURIComponent(searchParams.get('name') || 'Untitled Project');
 
-            // Hide the SSE connector after a delay
-            setTimeout(() => {
-                setShowSSEConnector(false);
-            }, 1000);
-        }
-    }, [resetStates]);
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <Toaster position="bottom-right" />
+      <DragLayerMonitor onDragChange={handleDragChange} />
 
-    // Cleanup when component unmounts
-    useEffect(() => {
-        return () => {
-            // Reset all test states on unmount
-            resetStates();
-            setButtonPulsing(false);
-        };
-    }, [resetStates]);
+      <div className={`${styles.variables} ${styles.pageContainer}`}>
+        <Header
+          projectName={projectName}
+          blocksCount={blocks.length}
+          isPlaying={isPlaying}
+          isLoading={buttonPulsing}
+          error={error}
+          validationResult={blockValidationResult}
+          onPlay={handlePlayClick}
+        />
 
-    // Menu Interaction Handler
-    const handleMenuClick = useCallback((menuId: MenuType) => {
-        setActiveMenu(prevMenu => {
-            const newMenu = prevMenu === menuId ? null : menuId;
-            // Force a reflow of the board container when the menu changes
-            setTimeout(() => {
-                if (boardContainerRef.current) {
-                    const event = new Event('resize');
-                    window.dispatchEvent(event);
-                }
-            }, 50);
-            return newMenu;
-        });
-    }, []);
+        {showTestStatus && testRunId && (
+          <TestStatus projectId={projectId} testId={testRunId} />
+        )}
 
-    // Drag Change Handler
-    const handleDragChange = useCallback((isDragging: boolean) => {
-        setIsDraggingBlock(isDragging);
-    }, []);
+        <div className={styles.mainGrid}>
+          <div className={styles.leftSidebar}>
+            {MENU_OPTIONS.map(opt => (
+              <span
+                key={opt.id}
+                className={`${opt.className} ${activeMenu === opt.id ? styles.active : ''}`}
+                onClick={() => handleMenuClick(opt.id)}
+              >
+                {opt.icon}
+              </span>
+            ))}
+          </div>
 
-    // Play Click Handler
-    const handlePlayClick = useCallback(async () => {
-        // First check if all required blocks are present
-        if (!blockValidationResult.isComplete) {
-            // Show toast notification about missing blocks
-            toast.error(getMissingBlocksMessage(blockValidationResult), {
-                duration: 4000,
-                position: 'bottom-right',
-            });
-
-            // Set flag for visual feedback in ProjectBoard
-            if (blocks.length > 0) {
-                setTestAttemptedWithMissingBlocks(true);
-
-                // Auto-reset after 5 seconds
-                setTimeout(() => {
-                    setTestAttemptedWithMissingBlocks(false);
-                }, 5000);
-            }
-
-            return;
-        }
-
-        // Additional check for file upload
-        const inputBlock = blocks.find(b => b.type === 'input');
-        if (inputBlock && (!inputBlock.config?.data || !inputBlock.config?.fileName)) {
-            toast.error('Please upload a file to the input block', {
-                duration: 4000,
-                position: 'bottom-right',
-            });
-
-            setTestAttemptedWithMissingBlocks(true);
-            setTimeout(() => {
-                setTestAttemptedWithMissingBlocks(false);
-            }, 5000);
-
-            return;
-        }
-
-        // Additional validation for test case format and shot type
-        const testCaseBlock = blocks.find(b => b.type === 'test-case');
-        if (testCaseBlock && (!testCaseBlock.shotType || !testCaseBlock.testCaseFormat)) {
-            toast.error('Test case configuration is incomplete', {
-                duration: 4000,
-                position: 'bottom-right',
-            });
-            return;
-        }
-
-        // Reset SSE status when starting a new test
-        setSSEStatus(null);
-        // Explicitly set button to pulsing
-        setButtonPulsing(true);
-        // Clear any cached/stored test results
-        clearResults();
-        // Explicitly clear the test run ID
-        clearTestRunId();
-
-        // Start the test
-        const success = await handleTest();
-
-        // If test started successfully, show the SSE connector
-        if (success) {
-            setShowSSEConnector(true);
-        } else {
-            // If test failed to start, stop pulsing
-            setButtonPulsing(false);
-        }
-    }, [blockValidationResult, blocks, handleTest, clearResults, clearTestRunId, setTestAttemptedWithMissingBlocks]);
-
-    // Stop Click Handler
-    // const handleStopClick = useCallback(() => {
-    //     handleStop();
-    //     // Explicitly stop pulsing when manually stopped
-    //     setButtonPulsing(false);
-    // }, [handleStop]);
-
-    // Dashboard visibility handler with debounce
-    const handleShowDashboard = useCallback((mode: 'applicability' | 'results') => {
-        if (activeMenu === 'dashboard') {
-            setDashboardMode(mode);
-            return;
-        }
-        setDashboardMode(mode);
-        setTimeout(() => {
-            setActiveMenu('dashboard');
-        }, 0);
-    }, [activeMenu]);
-
-    // Compute effective playing state
-    const effectiveIsPlaying = isPlaying && !(sseStatus?.type === 'completed' ||
-        sseStatus?.type === 'error' || sseStatus?.type === 'aborted');
-
-    const projectName = project?.name ||
-        decodeURIComponent(searchParams.get('name') || 'Untitled Project');
-
-    return (
-        <DndProvider backend={HTML5Backend}>
-            <Toaster position="bottom-right" />
-            <DragLayerMonitor onDragChange={handleDragChange} />
-
-            <div className={`${styles.variables} ${styles.pageContainer}`}>
-                <Header
-                    projectName={projectName}
-                    blocksCount={blocks.length}
-                    isPlaying={effectiveIsPlaying}
-                    isLoading={buttonPulsing}
-                    error={error || sseStatus?.error}
-                    validationResult={blockValidationResult}
-                    onPlay={handlePlayClick}
-                // onPause={handleStopClick}
-                />
-
-                {testRunId && showSSEConnector ? (
-                    <DeferredSSEConnector
-                        projectId={resolvedParams.id}
-                        testId={testRunId}
-                        // className={styles.connectionStatus}
-                        onStatusChange={handleSSEStatusChange}
-                    />
-                ) : null}
-
-                <div className={styles.mainGrid}>
-                    <div className={styles.leftSidebar}>
-                        {MENU_OPTIONS.map((option) => (
-                            <span
-                                key={option.id}
-                                className={`${option.className} ${activeMenu === option.id ? styles.active : ''}`}
-                                onClick={() => handleMenuClick(option.id)}
-                            >
-                                {option.icon}
-                            </span>
-                        ))}
-                    </div>
-
-                    <div className={styles.mainContent}>
-                        {(() => {
-                            switch (activeMenu) {
-                                case 'llm':
-                                    return <LLMSetting onProjectTypeChange={handleProjectTypeChange} />;
-                                case 'chart':
-                                    return <ScoreComparison projectId={resolvedParams.id} />;
-                                case 'dashboard':
-                                case 'options':
-                                case null:
-                                default:
-                                    return (
-                                        <div className={styles.contentWrapper}>
-                                            {activeMenu === 'options' && (
-                                                <SecondaryMenu
-                                                    activeTab="Setup"
-                                                    blocks={blocks}
-                                                    onBlocksUpdate={handleBlocksUpdate}
-                                                    isDraggingBlock={isDraggingBlock}
-                                                    projectType={projectType}
-                                                />
-                                            )}
-                                            <div ref={boardContainerRef} className={styles.boardContainer}>
-                                                <ProjectBoard
-                                                    projectType={projectType}
-                                                    initialBlocks={blocks}
-                                                    onBlocksUpdate={handleBlocksUpdate}
-                                                    onDashboardClick={() => handleShowDashboard('results')}
-                                                    onApplicabilityResults={(results) => {
-                                                        setApplicabilityResults(results);
-                                                        handleShowDashboard('applicability');
-                                                    }}
-                                                    showDashboardResults={handleShowDashboard}
-                                                    testResults={testResults}
-                                                    testRunId={testRunId}
-                                                    clearResults={clearResults}
-                                                    projectId={resolvedParams.id}
-                                                    sseStatus={sseStatus}
-                                                />
-                                            </div>
-                                            {activeMenu === 'dashboard' && (
-                                                <DashboardHandler
-                                                    testResults={testResults}
-                                                    applicabilityResults={applicabilityResults}
-                                                    onClose={() => setActiveMenu(null)}
-                                                    fileName={blocks.find(b => b.type === 'input')?.config?.fileName}
-                                                    isVisible={true}
-                                                    projectId={resolvedParams.id}
-                                                    initialViewMode={dashboardMode}
-                                                    testId={testRunId || ""} 
-                                                    projectType={projectType}
-                                                />
-                                            )}
-                                        </div>
-                                    );
-                            }
-                        })()}
-                    </div>
+          <div className={styles.mainContent}>
+            {activeMenu === 'llm' && <LLMSetting onProjectTypeChange={handleProjectTypeChange} />}
+            {activeMenu === 'chart' && <ScoreComparison projectId={projectId} />}
+            {activeMenu === 'tutorial' && <Tutorial />}
+            {(activeMenu === null || activeMenu === 'dashboard' || activeMenu === 'options') && (
+              <div className={styles.contentWrapper}>
+                {activeMenu === null && (
+                  <SecondaryMenu
+                    activeTab="Setup"
+                    blocks={blocks}
+                    onBlocksUpdate={handleBlocksUpdate}
+                    isDraggingBlock={isDraggingBlock}
+                    projectType={projectType}
+                  />
+                )}
+                <div ref={boardContainerRef} className={styles.boardContainer}>
+                  <ProjectBoard
+                    projectType={projectType}
+                    initialBlocks={blocks}
+                    onBlocksUpdate={handleBlocksUpdate}
+                    onDashboardClick={() => handleShowDashboard('results')}
+                    onApplicabilityResults={res => { setApplicabilityResults(res); handleShowDashboard('applicability'); }}
+                    showDashboardResults={handleShowDashboard}
+                    testResults={testResults}
+                    testRunId={testRunId}
+                    clearResults={clearResults}
+                    projectId={projectId}
+                  />
                 </div>
-            </div>
-        </DndProvider>
-    );
+                {activeMenu === 'dashboard' && (
+                  <DashboardHandler
+                    testResults={testResults}
+                    applicabilityResults={applicabilityResults}
+                    onClose={() => setActiveMenu(null)}
+                    fileName={blocks.find(b => b.type === 'input')?.config?.fileName}
+                    isVisible={true}
+                    projectId={projectId}
+                    initialViewMode={dashboardMode}
+                    testId={testRunId!}
+                    projectType={projectType}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </DndProvider>
+  );
 };
 
 export default ProjectPage;

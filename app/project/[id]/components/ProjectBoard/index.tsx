@@ -1,3 +1,4 @@
+// app/project/[id]/components/ProjectBoard/index.tsx
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useDrop } from 'react-dnd';
 import DraggableBlock from './components/DraggableBlock';
@@ -16,7 +17,6 @@ import { useApplicability } from './hooks/useApplicability';
 
 // utils
 import { generateSystemPrompt } from '@/app/utils/system-prompt-generator';
-import { validateBlocks, getMissingBlocksMessage } from './utils/blockValidation';
 import { mergeRefs } from './utils/connectionUtils';
 
 import { Block, DragItem, ProjectBoardProps, ProjectType, SystemPrompt } from '@/app/types';

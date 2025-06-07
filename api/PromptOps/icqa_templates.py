@@ -1,13 +1,19 @@
+# api/PromptOps/icqa_templates.py
 import pandas as pd
 import pickle
 from ..PromptOps.perturb import Perturbation
 
 
-class ShotTemplateFormatter:
-    def __init__(self, filepath):
+class ICQATemplateFormatter:
+    def __init__(self, filepath, project_type=None):
         self.filepath = filepath
+        self.project_type = project_type
         self.df = self.load_data()
         self.perturb = Perturbation()  # Initialize the perturbation class
+
+    def set_project_type(self, project_type):
+        """Set the project type (e.g., 'sentiment', 'qa')"""
+        self.project_type = project_type
 
     def load_data(self):
         """
@@ -41,13 +47,15 @@ class ShotTemplateFormatter:
         Apply perturbation to the question based on the perturbation type.
         """
         perturb_type = perturb_type.lower().strip()
-        if perturb_type == 'taxonomy':
+        if perturb_type == 'robust':
+            return question  # For robust, specific perturbations are expected from the data
+        elif perturb_type == 'taxonomy':
             return self.perturb.taxonomy(question)
         elif perturb_type == 'negation':
             return self.perturb.negation(question)
         elif perturb_type == 'coreference':
             # Specify word to clarify
-            return self.perturb.coreference(question, 'word')
+            return self.perturb.coreference(question)
         elif perturb_type == 'srl':
             return self.perturb.srl(question)
         elif perturb_type == 'logic':
@@ -63,16 +71,26 @@ class ShotTemplateFormatter:
         else:
             raise ValueError("Invalid perturbation type")
 
+    def _is_sentiment_task(self, row):
+        """Check if this is a sentiment analysis task (no Context needed)"""
+        return (self.project_type == 'sentiment' or 
+                'Context' not in row or 
+                pd.isna(row.get('Context', '')) or 
+                str(row.get('Context', '')).strip() == '')
+
     def format_zero_shot(self, row, perturb_type=None):
         """
         Format zero-shot template with optional perturbation for the main question.
         """
-
+        is_sentiment = self._is_sentiment_task(row)
+        
         if perturb_type == 'robust':
-            # original = f"Q: {row['Original_Question']}\nA:"
-            # perturbed = f"Q: {row['Perturbed_Question']}\nA:"
-            original = f"{row['Prefix']}\n{row['Original_Question']}"
-            perturbed = f"{row['Prefix']}\n{row['Perturbed_Question']}"
+            if is_sentiment:
+                original = f"{row['Prefix']}\nQuestion: {row['Original_Question']}\n"
+                perturbed = f"{row['Prefix']}\nQuestion: {row['Perturbed_Question']}\n"
+            else:
+                original = f"{row['Prefix']}\nContext: {row['Context']}\nQuestion: {row['Original_Question']}\n"
+                perturbed = f"{row['Prefix']}\nContext: {row['Context']}\nQuestion: {row['Perturbed_Question']}\n"
             return {
                 "Original_Question_Index": row['Original_Question_Index'],
                 "original_prompt": original,
@@ -85,12 +103,14 @@ class ShotTemplateFormatter:
             question = row['Question']
             if perturb_type:
                 question = self.perturb_question(question, perturb_type)
-            elif 'Perturbed' in row and row['Perturbed']:
-                question = row['Perturbed']
-            # original = f"Q: {row['Question']}\nA:"
-            # perturbed = f"Q: {question}\nA:"
-            original = f"{row['Prefix']}\n{row['Question']}"
-            perturbed = f"{row['Prefix']}\n{question}"
+            
+            if is_sentiment:
+                original = f"{row['Prefix']}\n{row['Question']}"
+                perturbed = f"{row['Prefix']}\n{question}"
+            else:
+                original = f"{row['Prefix']}\nContext: {row['Context']}\n{row['Question']}"
+                perturbed = f"{row['Prefix']}\nContext: {row['Context']}\n{question}"
+
             return {
                 "original_prompt": original,
                 "perturb_prompt": perturbed,
@@ -102,11 +122,15 @@ class ShotTemplateFormatter:
         """
         Format one-shot template with optional perturbation for the main question.
         """
+        is_sentiment = self._is_sentiment_task(row)
+        
         if perturb_type == 'robust':
-            # original = f"Q: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {row['Original_Question']}\nA:"
-            # perturbed = f"Q: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {row['Perturbed_Question']}\nA:"
-            original = f"{row['Prefix']}\n{row['Original_Question']}"
-            perturbed = f"{row['Prefix']}\n{row['Perturbed_Question']}"
+            if is_sentiment:
+                original = f"{row['Prefix']}\nQuestion: {row['Original_Question']}\n"
+                perturbed = f"{row['Prefix']}\nQuestion: {row['Perturbed_Question']}\n"
+            else:
+                original = f"{row['Prefix']}\nContext: {row['Context']}\nQuestion: {row['Original_Question']}\n"
+                perturbed = f"{row['Prefix']}\nContext: {row['Context']}\nQuestion: {row['Perturbed_Question']}\n"
             return {
                 "Original_Question_Index": row['Original_Question_Index'],
                 "original_prompt": original,
@@ -119,11 +143,13 @@ class ShotTemplateFormatter:
             question = row['Question']
             if perturb_type:
                 question = self.perturb_question(question, perturb_type)
-            # original = f"Q: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {row['Question']}\nA:"
-            # perturbed = f"Q: {row['Question_1']}\nA: {row['Answer_1']}\n\nQ: {question}\nA:"
-
-            original = f"{row['Prefix']}\n{row['Question']}"
-            perturbed = f"{row['Prefix']}\n{question}"
+            
+            if is_sentiment:
+                original = f"{row['Prefix']}\n{row['Question']}"
+                perturbed = f"{row['Prefix']}\n{question}"
+            else:
+                original = f"{row['Prefix']}\nContext: {row['Context']}\n{row['Question']}"
+                perturbed = f"{row['Prefix']}\nContext: {row['Context']}\n{question}"
 
             return {
                 "original_prompt": original,
@@ -136,18 +162,16 @@ class ShotTemplateFormatter:
         """
         Format few-shot template with optional perturbation for the main question.
         """
-
+        is_sentiment = self._is_sentiment_task(row)
+        
         if perturb_type == 'robust':
-            question = row['Perturbed_Question']
-            # few_shot_context = ""
-            # for i in range(1, len(row)//2):  # Assuming paired Question_X and Answer_X columns
-            #     if f'Question_{i}' in row and f'Answer_{i}' in row:
-            #         few_shot_context += f"Q: {row[f'Question_{i}']}\nA: {row[f'Answer_{i}']}\n\n"
+            if is_sentiment:
+                original = f"{row['Prefix']}\nQuestion: {row['Original_Question']}\n"
+                perturbed = f"{row['Prefix']}\nQuestion: {row['Perturbed_Question']}\n"
+            else:
+                original = f"{row['Prefix']}\nContext: {row['Context']}\nQuestion: {row['Original_Question']}\n"
+                perturbed = f"{row['Prefix']}\nContext: {row['Context']}\nQuestion: {row['Perturbed_Question']}\n"
 
-            # original = f"{few_shot_context}Q: {row['Original_Question']}\nA:"
-            # perturbed = f"{few_shot_context}Q: {question}\nA:"
-            original = f"{row['Prefix']}\n{row['Original_Question']}"
-            perturbed = f"{row['Prefix']}\n{row['Perturbed_Question']}"
             return {
                 "Original_Question_Index": row['Original_Question_Index'],
                 "original_prompt": original,
@@ -161,15 +185,13 @@ class ShotTemplateFormatter:
             if perturb_type:
                 question = self.perturb_question(question, perturb_type)
 
-            # few_shot_context = ""
-            # for i in range(1, len(row)//2):  # Assuming paired Question_X and Answer_X columns
-            #     if f'Question_{i}' in row and f'Answer_{i}' in row:
-            #         few_shot_context += f"Q: {row[f'Question_{i}']}\nA: {row[f'Answer_{i}']}\n\n"
+            if is_sentiment:
+                original = f"{row['Prefix']}\n{row['Question']}"
+                perturbed = f"{row['Prefix']}\n{question}"
+            else:
+                original = f"{row['Prefix']}\nContext: {row['Context']}\n{row['Question']}"
+                perturbed = f"{row['Prefix']}\nContext: {row['Context']}\n{question}"
 
-            # original = f"{few_shot_context}Q: {row['Original_Question']}\nA:"
-            # perturbed = f"{few_shot_context}Q: {question}\nA:"
-            original = f"{row['Prefix']}\n{row['Question']}"
-            perturbed = f"{row['Prefix']}\n{question}"
             return {
                 "original_prompt": original,
                 "perturb_prompt": perturbed,
@@ -204,3 +226,4 @@ class ShotTemplateFormatter:
         """
         df = pd.DataFrame(formatted_data)
         df.to_csv(output_filepath, index=False)
+        return output_filepath  # Return path for consistency
