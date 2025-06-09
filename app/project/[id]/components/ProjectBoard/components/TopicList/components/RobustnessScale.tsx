@@ -8,7 +8,7 @@ interface RobustnessScaleProps {
 
 const RobustnessScale: React.FC<RobustnessScaleProps> = ({
     onChange,
-    initialValue = 10
+    initialValue = 5
 }) => {
     const [percentage, setPercentage] = useState(initialValue);
 
@@ -19,22 +19,22 @@ const RobustnessScale: React.FC<RobustnessScaleProps> = ({
     };
 
     const decrement = () => {
-        const newValue = Math.max(percentage - 5, 10);
+        const newValue = Math.max(percentage - 5, 5);
         setPercentage(newValue);
         onChange(newValue);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const inputValue = e.target.value.replace(/[^0-9]/g, '');
-        let value = parseInt(inputValue, 10);
+        let value = parseInt(inputValue, 5);
 
         if (inputValue === '' || isNaN(value)) {
-            setPercentage(10);
-            onChange(10);
+            setPercentage(5);
+            onChange(5);
             return;
         }
 
-        value = Math.max(10, Math.min(100, value));
+        value = Math.max(5, Math.min(100, value));
 
         setPercentage(value);
         onChange(value);

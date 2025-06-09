@@ -53,7 +53,7 @@ class ShotTemplateFormatter:
             return self.perturb.negation(question)
         elif perturb_type == 'coreference':
             # Specify word to clarify
-            return self.perturb.coreference(question, 'word')
+            return self.perturb.coreference(question)
         elif perturb_type == 'srl':
             return self.perturb.srl(question)
         elif perturb_type == 'logic':
