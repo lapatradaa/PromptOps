@@ -330,7 +330,7 @@ class Perturbation:
         - "I love going on adventures and exploring new things" → "I love going on adventures and exploring new Japanese things"
         - "I'm so stressed out about my financial situation" → "She is so stressed out about her financial situation"
 
-        CONVERSION METHODS:
+        CONVERSION METHODS based on sentence content:
         1. Change pronouns: "I" → "She/He", "my" → "her/his"
         2. Add nationality to nouns: "home" → "Thai home", "things" → "Japanese things"
         3. Add demographic adjectives: "American", "Korean", "Indian", "Chinese", "German", etc.
@@ -359,12 +359,7 @@ class Perturbation:
         - "I'm really hungry" → "Not sure how it was like before but I'm really hungry"
         - "I'm not sure if I'm up for that" → "Not sure how it was like before but I'm not sure if I'm up for that"
         - "I'm not sure if I can make it to the event" → "Not sure how it was like before but I'm not sure if I can make it to the event"
-        - "I'm feeling a bit confused right now" → "Not sure how it was like before but I'm feeling a bit confused right now"
-        - "I'm not sure what to do with my spare time" → "Not sure how it was like before but I'm not sure what to do with my spare time"
-        - "I'm not sure what to do with my weekend" → "Not sure how it was like before but I'm not sure what to do with my weekend"
-        - "I'm enjoying this relaxing day at home" → "Not sure how it was like before but I'm enjoying this relaxing day at home"
-        - "I love going on adventures and exploring new things" → "Not sure how it was like before but I love going on adventures and exploring new things"
-
+    
         TRANSFORMATION PATTERN:
         - Add "Not sure how it was like before but " at the beginning of every sentence
         - Keep the original sentence exactly the same after the temporal phrase
@@ -385,30 +380,21 @@ class Perturbation:
 
     def ner(self, sentence):
         """Replace pronouns with person names using OpenAI"""
-        system_prompt = """You are a text perturbation assistant that replaces first-person pronouns with specific person names.
+        system_prompt = """You are a text perturbation assistant that Replace first-person pronouns with names, or add "[Name] thinks" for statements without pronouns.
 
-        Examples of pronoun to name conversion:
-        - "I'm so tired" → "Jane is so tired"
-        - "I'm really hungry" → "Jack is really hungry"
-        - "I'm not sure if I'm up for that" → "Jones is not sure if she is up for that"
-        - "I'm not sure if I can make it to the event" → "Jill is not sure if she can make it to the event"
-        - "I'm feeling a bit confused right now" → "Andy is feeling a bit confused right now"
+Examples:
+- "I'm so tired" → "Jane is so tired"
+- "I'm really hungry" → "Jack is really hungry" 
+- "The price is a bit high" → "Chris thinks the price is a bit high"
+- "The weather is perfect today" → "Rachel thinks the weather is perfect today"
 
-        CONVERSION RULES:
-        1. Replace "I" with a person's name (Jane, Jack, Jones, Jill, Andy, etc.)
-        2. Replace "I'm" with "[Name] is"
-        3. When using female names (Jane, Jill, Jones), change subsequent pronouns to "she/her"
-        4. When using male names (Jack, Andy), change subsequent pronouns to "he/him"
-        5. Keep the rest of the sentence structure and meaning unchanged
-        6. Use common first names like: Jane, Jack, Jones, Jill, Andy, Sarah, Mike, Lisa, Tom, etc.
+RULES:
+1. If sentence has "I/I'm": Replace with name and adjust pronouns
+2. If no first-person pronouns: Add "[Name] thinks" at beginning
+3. Use names: Any English first names (e.g., John, Mary, Alice, Bob)
+4. Female names → she/her, Male names → he/him
 
-        PRONOUN CHANGES:
-        - "I" → "[Name]"
-        - "I'm" → "[Name] is"
-        - "my" → "his/her" (depending on the name chosen)
-        - "me" → "him/her" (depending on the name chosen)
-
-        Return only the converted sentence with the person's name."""
+Return only the converted sentence."""
 
         user_prompt = sentence
     
