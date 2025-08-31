@@ -10,238 +10,52 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import wordnet
 from nltk import pos_tag
 from textblob import TextBlob
-from PyDictionary import PyDictionary  # Switch back to PyDictionary
+# from PyDictionary import PyDictionary  # Switch back to PyDictionary
 import spacy
 import re
 from nltk.corpus import wordnet as wn
 import requests  # for llama lmstudio llm
 import spacy
 import inflect
+from dotenv import load_dotenv  
+from openai import OpenAI
 
-nlp = spacy.load("en_core_web_sm")
+# nlp = spacy.load("en_core_web_sm")
 
-dictionary = PyDictionary()  # Initialize PyDictionary
+# dictionary = PyDictionary()  # Initialize PyDictionary
 
-class QuestionConverter:
-    def __init__(self):
-        self.nlp = spacy.load("en_core_web_sm")
-        self.inflect_engine = inflect.engine()
-
-        # Mapping of auxiliary verbs to their passive forms
-        self.aux_mapping = {
-            'do': 'is',
-            'does': 'is',
-            'did': 'was',
-            'will': 'will be',
-            'can': 'can be',
-            'could': 'could be',
-            'should': 'should be',
-            'would': 'would be',
-            'might': 'might be',
-            'must': 'must be'
-        }
-
-        # Common irregular verb past participles
-        self.irregular_verbs = {
-            'eat': 'eaten',
-            'teach': 'taught',
-            'draw': 'drawn',
-            'drink': 'drunk',
-            'drive': 'driven',
-            'give': 'given',
-            'know': 'known',
-            'see': 'seen',
-            'show': 'shown',
-            'speak': 'spoken',
-            'take': 'taken',
-            'write': 'written',
-            'break': 'broken',
-            'choose': 'chosen',
-            'forget': 'forgotten',
-            'get': 'gotten',
-            'hide': 'hidden',
-            'make': 'made',
-            'mean': 'meant',
-            'pay': 'paid',
-            'put': 'put',
-            'read': 'read',
-            'say': 'said',
-            'sell': 'sold',
-            'send': 'sent',
-            'sing': 'sung',
-            'sit': 'sat',
-            'tell': 'told',
-            'think': 'thought',
-            'clean': 'cleaned'
-        }
-
-    def get_past_participle(self, verb):
-        """Convert a verb to its past participle form"""
-        verb = verb.lower()
-        # Check irregular verbs first
-        if verb in self.irregular_verbs:
-            return self.irregular_verbs[verb]
-
-        # Handle regular verbs
-        if verb.endswith('e'):
-            return verb + 'd'
-        elif verb.endswith('y'):
-            if verb[-2] not in 'aeiou':
-                return verb[:-1] + 'ied'
-            else:
-                return verb + 'ed'
-        elif len(verb) > 2 and verb[-1] not in 'aeiou' and verb[-2] in 'aeiou' and verb[-3] not in 'aeiou':
-            return verb + verb[-1] + 'ed'
-        else:
-            return verb + 'ed'
-
-    def should_use_are(self, noun_phrase):
-        """Determine if 'are' should be used instead of 'is'"""
-        # Check if the noun is plural
-        if self.inflect_engine.plural_noun(noun_phrase.split()[-1]):
-            return True
-
-        # Handle uncountable nouns (like "software")
-        uncountable_nouns = {'software', 'information',
-                             'knowledge', 'research', 'equipment', 'furniture'}
-        if noun_phrase.split()[-1].lower() in uncountable_nouns:
-            return False
-
-        return False
-
-    def convert_question(self, question):
-        """
-        Convert a question from active to passive voice.
-
-        Args:
-            question (str): Input question in active voice
-
-        Returns:
-            str: Converted question in passive voice
-        """
-        # Parse the question
-        doc = self.nlp(question)
-
-        # Extract components
-        words = [token.text for token in doc]
-        first_word = words[0].lower()
-
-        # Find the main verb and object
-        root_verb = None
-        subject = None
-        obj = None
-        determiners = []
-
-        for token in doc:
-            if token.dep_ == "ROOT" and not root_verb:
-                root_verb = token
-            if token.dep_ == "nsubj" and not subject:
-                subject = token
-            if token.dep_ == "dobj" and not obj:
-                obj = token
-            if token.dep_ == "det" and token.head == obj:
-                determiners.append(token)
-
-        # Handle cases where parsing might have failed
-        if not all([root_verb, subject, obj]):
-            return question
-
-        # Preserve determiners (like "the") with the object
-        obj_phrase = obj.text
-        if determiners:
-            obj_phrase = f"{determiners[0].text} {obj_phrase}"
-
-        # Get the correct form of "be" based on the original auxiliary
-        new_aux = self.aux_mapping.get(first_word, 'is')
-
-        # Handle "is" vs "are"
-        if new_aux == 'is' and self.should_use_are(obj_phrase):
-            new_aux = 'are'
-        elif new_aux == 'was' and self.should_use_are(obj_phrase):
-            new_aux = 'were'
-
-        # Get past participle of the main verb
-        past_participle = self.get_past_participle(root_verb.text)
-
-        # Convert pronouns if necessary
-        subject_phrase = subject.text
-        if subject_phrase.lower() in ['i', 'you', 'he', 'she', 'we', 'they']:
-            pronoun_map = {
-                'i': 'me', 'you': 'you', 'he': 'him', 'she': 'her',
-                'we': 'us', 'they': 'them'
-            }
-            subject_phrase = pronoun_map.get(
-                subject_phrase.lower(), subject_phrase)
-
-        # Extract any additional context (time, place, manner, etc.) after the object
-        additional_context = ' '.join(words[words.index(
-            obj.text) + 1:-1]) if words.index(obj.text) < len(words) - 1 else ''
-
-        # Reconstruct the question
-        if additional_context:
-            passive = f"{new_aux} {obj_phrase} {past_participle} by {subject_phrase} {additional_context}?"
-        else:
-            passive = f"{new_aux} {obj_phrase} {past_participle} by {subject_phrase}?"
-
-        # Capitalize first letter
-        return passive[0].upper() + passive[1:]
-
-
-def get_synonym(word, pos):
-    """Fetches a synonym for a given word based on its POS tag using WordNet."""
-    synonyms = set()
-
-    # Map NLTK POS tags to WordNet POS tags
-    wn_pos_map = {
-        'NN': wn.NOUN, 'NNS': wn.NOUN, 'NNP': wn.NOUN, 'NNPS': wn.NOUN,  # Nouns
-        'VB': wn.VERB, 'VBD': wn.VERB, 'VBG': wn.VERB, 'VBN': wn.VERB, 'VBP': wn.VERB, 'VBZ': wn.VERB,  # Verbs
-        'JJ': wn.ADJ, 'JJR': wn.ADJ, 'JJS': wn.ADJ,  # Adjectives
-        'RB': wn.ADV, 'RBR': wn.ADV, 'RBS': wn.ADV   # Adverbs
-    }
-
-    # Get WordNet POS type if available
-    wn_pos = wn_pos_map.get(pos, None)
-
-    # Fetch synonyms if a valid POS is found
-    if wn_pos:
-        for syn in wn.synsets(word, pos=wn_pos):
-            for lemma in syn.lemmas():
-                if lemma.name() != word.replace("_", " "):  # Exclude original word
-                    # Replace underscores with spaces
-                    synonyms.add(lemma.name().replace("_", " "))
-
-    # Return synonym if found, else original word
-    return random.choice(list(synonyms)) if synonyms else word
 
 
 class Perturbation:
     def __init__(self):
-        # self.nlp = spacy.load("en_core_web_sm") small model
-
-        self.nlp = spacy.load("en_core_web_lg")
-        # coreferee.add_to_pipe(self.nlp)
-        self.dictionary = PyDictionary()
-        self.nlp.add_pipe("coreferee")
-
+        """Initialize the Perturbation class and set up OpenAI client"""
+        load_dotenv()
         # Initialize verb processor
-        self.question_converter = QuestionConverter()
+        api_key = os.getenv("OPENAI_API_KEY") or os.getenv("API_KEY_PERURBATION_KEY")
+        if not api_key or api_key == "sk-your-api-key-here":
+            raise ValueError("Please set OPENAI_API_KEY environment variable")
+            
+        self.openai_client = OpenAI(api_key=api_key)
 
-        # Initialize time indicators
-        self.time_indicators = {
-            "today", "yesterday", "tomorrow", "soon", "now",
-            "next week", "last year", "earlier", "later", "by",
-            "this morning", "this evening", "tonight", "last night"
-        }
+    def _call_openai(self, system_prompt, user_prompt, max_tokens=150):
+        """
+        Helper function to call OpenAI API
+        """
+        try:
+            response = self.openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                max_tokens=max_tokens,
+                temperature=0.1
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            print(f"OpenAI API error: {e}")
+            return user_prompt  # Return original if API fails
 
-        # Try to load dataset if available
-        self.dataset = None
-        dataset_path = os.path.join(os.path.dirname(
-            __file__), "active_to_passive_dataset.csv")
-        if os.path.exists(dataset_path):
-            try:
-                self.dataset = pd.read_csv(dataset_path)
-            except Exception as e:
-                print(f"Warning: Could not load dataset: {e}")
 
     def robust(self, text, num):
         """
@@ -376,446 +190,262 @@ class Perturbation:
         return result_df
 
     def taxonomy(self, sentence):
-        """Replaces exactly one word in a sentence with its synonym (if available)."""
-        # Tokenize and tag the sentence
-        tokens = word_tokenize(sentence)
-        tagged = pos_tag(tokens)
+        """Replace exactly one word with its synonym using OpenAI"""
+        system_prompt = """You are a text perturbation assistant that replaces exactly one word with its synonym. 
 
-        # Filter for words that might have synonyms (excluding stopwords, punctuation, etc.)
-        eligible_words = []
-        for i, (word, tag) in enumerate(tagged):
-            # Check if the word is long enough and has a valid POS tag for synonym replacement
-            if len(word) > 3 and tag in ['NN', 'NNS', 'NNP', 'NNPS', 'VB', 'VBD', 'VBG',
-                                         'VBN', 'VBP', 'VBZ', 'JJ', 'JJR', 'JJS', 'RB', 'RBR', 'RBS']:
-                eligible_words.append(i)
+        Examples for statements:
+        - "I'm so tired" → "I'm so exhausted"
+        - "I'm really hungry" → "I'm really starving" 
+        - "I'm not sure if I'm up for that" → "I'm not certain if I'm up for that"
+        - "I'm not sure if I can make it to the event" → "I'm not confident if I can make it to the event"
 
-        # If no eligible words found, return the original sentence
-        if not eligible_words:
-            return sentence
+        Examples for questions:
+        - "Are you likely to find a crucifix in Karachi?" → "Are you likely to discover a crucifix in Karachi?"
+        - "Do you think this method will work?" → "Do you believe this method will work?"
+        - "Can you help me with this task?" → "Can you assist me with this task?"
 
-        # Randomly select one word to replace
-        word_index = random.choice(eligible_words)
-        word, tag = tagged[word_index]
+        Instructions:
+        1. Identify whether the input is a statement or question
+        2. Replace exactly ONE word with an appropriate synonym
+        3. Maintain the original sentence structure and meaning
+        4. Return only the modified sentence, nothing else"""
 
-        # Get synonym for the selected word
-        synonym = get_synonym(word, tag)
-
-        # Replace only if a different synonym was found
-        if synonym != word:
-            tokens[word_index] = synonym
-
-        # Reconstruct the sentence with the single word replaced
-        new_sentence = ' '.join(tokens)
-        return new_sentence
+        user_prompt = f"{sentence}"
+            
+        return self._call_openai(system_prompt, user_prompt)
 
     def negation(self, text):
-        """
-        Modifies the sentence to negate its meaning:
+        """Negate the sentence meaning using OpenAI"""
+        system_prompt = """You are a text perturbation assistant that converts sentences using negation methods.
 
-        - If "not" or "n't" is present, replaces the next adjective or adverb with its antonym (if available).
-        - If "not" or "n't" is absent, inserts "not" before an adjective or adverb and replaces it with its antonym.
-        - Does NOT remove or modify verbs.
+        NEGATION PATTERNS:
 
-        :param text: The input sentence.
-        :return: A negated version of the sentence.
-        """
-        def antonyms_for(word):
-            """
-            Find antonyms for a given word across all parts of speech.
+        For statements:
+        - Add "not" + opposite word: "I'm so tired" → "I'm so not energetic"
+        - Add "not" + antonym: "I'm really hungry" → "I'm really not full"
+        - Move existing negation: "I'm not sure if I'm up for that" → "I'm sure I'm not up for that"
+        - Replace with negative form: "I'm not sure" → "I'm unsure"
+        - Add "not" + positive adjective: "I'm confused" → "I'm not clear"
 
-            :param word: The word for which to find antonyms.
-            :return: A set of antonyms for the given word.
-            """
-            antonyms = set()
-            for ss in wn.synsets(word):
-                for lemma in ss.lemmas():
-                    for antonym in lemma.antonyms():
-                        antonyms.add(antonym.name())
-            return antonyms
-        tokens = word_tokenize(text)
-        tagged = pos_tag(tokens)
+        For questions:
+        - Use double negative: "Are Sable's a good choice?" → "Are Sable's not a bad choice?"
+        - Flip positive to negative: "Is this correct?" → "Is this not incorrect?"
+        - Add negation while preserving question: "Do you like it?" → "Do you not dislike it?"
 
-        result = []
-        skip_next = False  # Flag to skip the next word after negation handling
-        negation_found = False
+        RULES:
+        1. Change the meaning through negation
+        2. Maintain grammatical correctness
+        3. Keep original sentence structure (statement/question)
+        4. Use natural-sounding negation patterns
+        5. Return only the negated sentence"""
 
-        for i, (word, tag) in enumerate(tagged):
-            if skip_next:
-                skip_next = False
-                continue
-
-            # Handle existing negation by replacing the next adjective/adverb with its antonym
-            if word.lower() in ["not", "n't"]:
-                if i + 1 < len(tagged):
-                    next_word, next_tag = tagged[i + 1]
-                    if next_tag.startswith(("JJ", "RB")):  # Adjectives, adverbs
-                        antonyms = antonyms_for(next_word)
-                        if antonyms:
-                            result.append(list(antonyms)[0])
-                        else:
-                            result.append(next_word)
-                        skip_next = True
-                negation_found = True
-            else:
-                result.append(word)
-
-        # If no negation was found, add "not" before an adjective or adverb
-        if not negation_found:
-            for i, (word, tag) in enumerate(tagged):
-                if tag.startswith(("JJ", "RB")):  # Adjectives, adverbs (not verbs)
-                    antonyms = antonyms_for(word)
-                    if antonyms:
-                        result.insert(i, "not")
-                        result[i + 1] = list(antonyms)[0]
-                        break  # Only add negation once
-
-        # Join tokens and fix spacing
-        transformed_text = " ".join(result)
-        transformed_text = re.sub(r'\s+([?.!,"])', r'\1', transformed_text)
-
-        return transformed_text
+        user_prompt = text
+            
+        return self._call_openai(system_prompt, user_prompt, max_tokens=400)
 
     def coreference(self, text):
-        """
-        Resolves coreferences in the given text using the loaded NLP model with coreference resolution capabilities.
+        """Resolve coreferences in questions using OpenAI"""
+        system_prompt = """You are a text perturbation assistant that converts questions by adding coreference resolution patterns.
 
-        Args:
-            text (str): The input text to process.
+        Examples of question coreference conversion:
+        - "Are you likely to find a crucifix in Karachi?" → "Considering yourself, are you likely to find a crucifix in Karachi?"
+        - "Could the main character of "Alice's Adventures in Wonderland" join a Masonic Lodge?" → "Considering the main character of "Alice's Adventures in Wonderland", can she join a Masonic Lodge?"
+        - "Are Sable's a good choice of Mustelidae to weigh down a scale?" → "Considering Sable's, is it a good choice of Mustelidae to weigh down a scale?"
+        - "Is Romeo and Juliet an unusual title to teach high schoolers?" → "Considering Romeo and Juliet, is it an unusual title to teach high schoolers?"
 
-        Returns:
-            str: The text with resolved coreferences.
-        """
-        try:
-            # Process the text with the NLP model
-            doc = self.nlp(text)
+        CONVERSION PATTERN:
+        1. Start with "Considering [subject/entity],"
+        2. Replace pronouns or references with appropriate pronouns (he/she/it/they)
+        3. Maintain the question format
+        4. Make the coreference relationship explicit
 
-            # If no coreference chains exist, return the original text
-            if not doc._.coref_chains:
-                return text
+        RULES:
+        1. Add "Considering [entity/subject]," at the beginning
+        2. Replace later references with appropriate pronouns when needed
+        3. Keep the question structure intact
+        4. Use proper pronouns (he/she/it/they) based on the subject
+        5. Return only the converted question"""
 
-            # Use coreference chains to resolve references
-            resolved_text = []
-            for token in doc:
-                if token.is_punct:
-                    # Preserve punctuation as-is
-                    resolved_text.append(token.text)
-                else:
-                    # Attempt to resolve the token
-                    resolved_token = doc._.coref_chains.resolve(token)
-                    if resolved_token:
-                        # Use the first resolved token's text
-                        resolved_text.append(resolved_token[0].text)
-                    else:
-                        # Use the original token if no resolution exists
-                        resolved_text.append(token.text)
+        user_prompt = text
+        
+        return self._call_openai(system_prompt, user_prompt, max_tokens=400)
 
-            # Join resolved text and fix spacing around punctuation
-            resolved_text = " ".join(resolved_text)
-            # Fix spaces before punctuation
-            resolved_text = re.sub(r'\s+([?.!,"])', r'\1', resolved_text)
-            return resolved_text.strip()
-        except Exception as e:
-            # Log and handle any errors, returning the original text as a fallback
-            print(f"Coreference resolution error: {e}")
-            return text
+    def srl(self, sentence):
+        """Convert active voice questions to passive voice using OpenAI"""
+        system_prompt = """You are a text perturbation assistant that converts questions from active voice to passive voice using semantic role labeling.
 
-    def srl(self, sentence: str) -> str:
-        """
-        Performs SRL perturbation by converting active voice to passive voice.
+        Examples of active to passive voice conversion for questions:
+        - "Are you likely to find a crucifix in Karachi?" → "Is a crucifix in Karachi likely to be found by you?"
+        - "Could the main character of "Alice's Adventures in Wonderland" join a Masonic Lodge?" → "Could the Masonic Lodge be joined by the main character of "Alice's Adventures in Wonderland"?"
+        - "Are Sable's a good choice of Mustelidae to weigh down a scale?" → "Is a good choice of Mustelidae to weigh down a scale Sable's?"
+        - "Is Romeo and Juliet an unusual title to teach high schoolers?" → "Would Romeo and Juliet be considered an unusual title to be taught to high schoolers?"
+        - "Do Windows or Android smartphones run newer versions of Linux?" → "Are newer versions of Linux run on Windows or Android smartphones?"
 
-        Args:
-            sentence (str): Input sentence to perturb.
+        CONVERSION RULES:
+        1. Transform the question from active voice to passive voice
+        2. Move the object to the subject position
+        3. Change the verb to passive form (be + past participle)
+        4. Move the original subject to the end with "by" (when appropriate)
+        5. Adjust auxiliary verbs as needed (are/is/could/would/etc.)
+        6. Maintain the question format
+        7. Ensure grammatical correctness in the passive construction
 
-        Returns:
-            str: Perturbed sentence in passive voice if conversion is possible.
-        """
-        passive_sentence = self.question_converter.convert_question(sentence)
+        Return only the converted passive voice question."""
 
-        # If conversion fails, return a fallback message
-        if passive_sentence.lower() == sentence.lower():
-            return "Could not convert to passive voice."
+        user_prompt = sentence
+        
+        return self._call_openai(system_prompt, user_prompt, max_tokens=400)
 
-        return passive_sentence.capitalize()
+    # def logic(self, sentence):
+    #     """
+    #     Transforms a sentence with an 'if...then...' structure by swapping the condition and conclusion.
 
-    def logic(self, sentence):
-        """
-        Transforms a sentence with an 'if...then...' structure by swapping the condition and conclusion.
+    #     Args:
+    #         sentence (str): Input sentence with 'if...then...' structure.
 
-        Args:
-            sentence (str): Input sentence with 'if...then...' structure.
+    #     Returns:
+    #         str: Transformed sentence with swapped condition and conclusion.
+    #     """
+    #     # Check if the sentence contains "if...then..."
+    #     match = re.search(r'if (.*), then (.*)', sentence, re.IGNORECASE)
+    #     if match:
+    #         condition = match.group(1).strip().rstrip('.')
+    #         conclusion = match.group(2).strip().rstrip('.')
 
-        Returns:
-            str: Transformed sentence with swapped condition and conclusion.
-        """
-        # Check if the sentence contains "if...then..."
-        match = re.search(r'if (.*), then (.*)', sentence, re.IGNORECASE)
-        if match:
-            condition = match.group(1).strip().rstrip('.')
-            conclusion = match.group(2).strip().rstrip('.')
+    #         # Swap the condition and conclusion
+    #         transformed_sentence = f"If {conclusion}, then {condition}"
+    #         return transformed_sentence
 
-            # Swap the condition and conclusion
-            transformed_sentence = f"If {conclusion}, then {condition}"
-            return transformed_sentence
-
-        # If no 'if...then...' is found, return the original sentence with a note
-        return "No 'if...then...' structure found in the sentence."
+    #     # If no 'if...then...' is found, return the original sentence with a note
+    #     return "No 'if...then...' structure found in the sentence."
 
     def fairness(self, sentence):
-        """
-        Adds gender-specific words ('female' or 'male') to a sentence if no gender word is present.
-        If the main noun is not human, adds nationality-specific words ('American', 'Japanese', 'Korean', etc.) instead.
+        """Add gender, race, or nationality information while preserving sentiment using OpenAI"""
+        system_prompt = """You are a text perturbation assistant that adds specific gender, race, or nationality information to sentences while preserving the overall sentiment.
 
-        Args:
-            sentence (str): Input sentence.
+        Examples of adding demographic information:
+        - "I'm so tired" → "She is so tired"
+        - "I'm not sure what to do with my weekend" → "She is not sure what to do with her weekend"
+        - "I'm enjoying this relaxing day at home" → "I'm enjoying this relaxing day at Thai home"
+        - "I love going on adventures and exploring new things" → "I love going on adventures and exploring new Japanese things"
+        - "I'm so stressed out about my financial situation" → "She is so stressed out about her financial situation"
 
-        Returns:
-            str: Sentence with added gender or nationality word if none is present.
-        """
-        # Define gender-specific and nationality-specific words
-        gender_words = {"female", "male", "woman", "man",
-                        "girl", "boy", "she", "he", "her", "his"}
-        nationality_words = ["American", "Japanese", "Korean",
-                             "Indian", "Canadian", "Brazilian", "German"]
+        CONVERSION METHODS:
+        1. Change pronouns: "I" → "She/He", "my" → "her/his"
+        2. Add nationality to nouns: "home" → "Thai home", "things" → "Japanese things"
+        3. Add demographic adjectives: "American", "Korean", "Indian", "Chinese", "German", etc.
+        4. Change gender references while keeping the same meaning and sentiment
 
-        # Tokenize and tag parts of speech
-        tokens = word_tokenize(sentence)
-        tagged = pos_tag(tokens)
+        RULES:
+        1. Preserve the original sentiment and meaning of the sentence
+        2. Add only ONE demographic element per sentence
+        3. Make natural-sounding modifications
+        4. Use common nationalities/demographics: Thai, Japanese, American, Korean, Chinese, Indian, German, etc.
+        5. For gender changes: use he/she, his/her appropriately
+        6. Return only the converted sentence, nothing else
 
-        # Check if the sentence already contains a gender word
-        if any(word.lower() in gender_words for word in tokens):
-            return sentence  # Return original sentence if gender word exists
+        Only show the converted sentence in the response."""
 
-        # Identify the main noun and check if it is human
-        main_noun = None
-        for word, tag in tagged:
-            if tag in {"NN", "NNS", "NNP", "NNPS"}:  # Nouns
-                main_noun = word
-                break
-
-        # Check if the main noun is human using WordNet
-        if main_noun:
-            synsets = wn.synsets(main_noun, pos=wn.NOUN)
-            if synsets:
-                for synset in synsets:
-                    if "person" in synset.lexname():
-                        # Main noun is human, add a gender word
-                        gender_word = random.choice(
-                            ["female", "male", "American", "Japanese"])
-                        tokens.insert(tokens.index(main_noun), gender_word)
-                        # Ensure no space before punctuation
-                        return re.sub(r'\s+([?.!,"])', r'\1', " ".join(tokens))
-
-            # Main noun is not human, add a nationality word
-            nationality_word = random.choice(nationality_words)
-            tokens.insert(tokens.index(main_noun), nationality_word)
-            # Ensure no space before punctuation
-            return re.sub(r'\s+([?.!,"])', r'\1', " ".join(tokens))
-
-        # If no main noun is found, prepend a nationality word
-        nationality_word = random.choice(nationality_words)
-        # Ensure no space before punctuation
-        return re.sub(r'\s+([?.!,"])', r'\1', f"{nationality_word} {sentence}")
-
-    def correct_grammar(self, text):
-        """
-        Corrects grammar using LanguageTool's public API.
-
-        Args:
-            text (str): Input text.
-
-        Returns:
-            str: Text with corrected grammar.
-        """
-        url = "https://api.languagetool.org/v2/check"
-        params = {
-            'text': text,
-            'language': 'en-US'
-        }
-        response = requests.post(url, data=params)
-        if response.status_code == 200:
-            matches = response.json().get('matches', [])
-            for match in matches:
-                replacements = match.get('replacements', [])
-                if replacements:
-                    replacement = replacements[0].get('value', '')
-                    start = match['offset']
-                    end = start + match['length']
-                    text = text[:start] + replacement + text[end:]
-            return text
-        else:
-            return text  # Return original text if API fails
+        user_prompt = sentence
+            
+        return self._call_openai(system_prompt, user_prompt, max_tokens=400)
 
     def temporal(self, sentence):
-        """
-        Transforms present tense sentences into temporal context by adding past statements
-        with opposite sentiment. Ensures the sentence is lowercased and contextual.
+        """Add temporal context by contrasting past and present using OpenAI"""
+        system_prompt = """You are a text perturbation assistant that adds temporal context by contrasting past uncertainty with present statements.
 
-        Args:
-            sentence (str): Input sentence.
+        Examples of temporal transformation:
+        - "I'm so tired" → "Not sure how it was like before but I'm so tired"
+        - "I'm really hungry" → "Not sure how it was like before but I'm really hungry"
+        - "I'm not sure if I'm up for that" → "Not sure how it was like before but I'm not sure if I'm up for that"
+        - "I'm not sure if I can make it to the event" → "Not sure how it was like before but I'm not sure if I can make it to the event"
+        - "I'm feeling a bit confused right now" → "Not sure how it was like before but I'm feeling a bit confused right now"
+        - "I'm not sure what to do with my spare time" → "Not sure how it was like before but I'm not sure what to do with my spare time"
+        - "I'm not sure what to do with my weekend" → "Not sure how it was like before but I'm not sure what to do with my weekend"
+        - "I'm enjoying this relaxing day at home" → "Not sure how it was like before but I'm enjoying this relaxing day at home"
+        - "I love going on adventures and exploring new things" → "Not sure how it was like before but I love going on adventures and exploring new things"
 
-        Returns:
-            str: Temporally transformed sentence.
-        """
-        def get_antonym(word):
-            """Retrieve an antonym for the given word."""
-            antonyms = set()
-            for synset in wn.synsets(word):
-                for lemma in synset.lemmas():
-                    if lemma.antonyms():
-                        antonyms.add(lemma.antonyms()[0].name())
-            return random.choice(list(antonyms)) if antonyms else None
+        TRANSFORMATION PATTERN:
+        - Add "Not sure how it was like before but " at the beginning of every sentence
+        - Keep the original sentence exactly the same after the temporal phrase
+        - Create a contrast between past uncertainty and present state
 
-        def find_subject(sentence):
-            """Find the main subject (noun/proper noun) of the sentence."""
-            doc = self.nlp(sentence)
-            for token in doc:
-                if token.dep_ in {"nsubj", "pobj", "dobj"} and token.pos_ in {"NOUN", "PROPN"}:
-                    return token.text
-            return "it"  # Fallback if no subject is found
+        RULES:
+        1. Always start with "Not sure how it was like before but "
+        2. Keep the original sentence completely unchanged after the temporal phrase
+        3. The transformation creates a temporal contrast (uncertain past vs current state)
+        4. Maintain the original meaning and sentiment of the sentence
+        5. Return only the transformed sentence
 
-        # Lowercase the sentence
-        sentence = sentence.lower()
+        Return only the converted sentence."""
 
-        # Detect tense and sentiment-related words
-        doc = self.nlp(sentence)
-        tense = None
-        sentiment_word = None
-        for token in doc:
-            if token.tag_ in {'VBP', 'VBZ'}:  # Present tense verbs
-                tense = 'present'
-            # Find sentiment words (adjective/adverb)
-            if token.pos_ in {"ADJ", "ADV"}:
-                sentiment_word = token.text
-
-        # If sentence is not present tense, return as is
-        if tense != 'present':
-            return sentence.capitalize()
-
-        # Find antonym for the sentiment word
-        antonym = get_antonym(sentiment_word) if sentiment_word else None
-        subject = find_subject(sentence)
-
-        # Construct the transformed sentence
-
-        past_phrase = f"Not sure how it was like before"
-        # past_phrase = f"{subject} used to be {antonym}" if antonym else f"{subject} was not {sentiment_word}"
-        # else:
-
-        transformed_sentence = f"{past_phrase} but {sentence}."
-        return transformed_sentence.capitalize()
+        user_prompt = sentence
+    
+        return self._call_openai(system_prompt, user_prompt, max_tokens=400)
 
     def ner(self, sentence):
-        """
-        Replaces location names (GPE entities) in the input sentence with another location name.
+        """Replace pronouns with person names using OpenAI"""
+        system_prompt = """You are a text perturbation assistant that replaces first-person pronouns with specific person names.
 
-        Args:
-            sentence (str): Input sentence.
+        Examples of pronoun to name conversion:
+        - "I'm so tired" → "Jane is so tired"
+        - "I'm really hungry" → "Jack is really hungry"
+        - "I'm not sure if I'm up for that" → "Jones is not sure if she is up for that"
+        - "I'm not sure if I can make it to the event" → "Jill is not sure if she can make it to the event"
+        - "I'm feeling a bit confused right now" → "Andy is feeling a bit confused right now"
 
-        Returns:
-            str: Sentence with location names replaced.
-        """
-        # List of alternative locations
-        location_names = ["Canada", "Australia", "Germany",
-                          "France", "India", "Japan", "Brazil"]
+        CONVERSION RULES:
+        1. Replace "I" with a person's name (Jane, Jack, Jones, Jill, Andy, etc.)
+        2. Replace "I'm" with "[Name] is"
+        3. When using female names (Jane, Jill, Jones), change subsequent pronouns to "she/her"
+        4. When using male names (Jack, Andy), change subsequent pronouns to "he/him"
+        5. Keep the rest of the sentence structure and meaning unchanged
+        6. Use common first names like: Jane, Jack, Jones, Jill, Andy, Sarah, Mike, Lisa, Tom, etc.
 
-        # Parse the sentence using SpaCy
-        doc = nlp(sentence)
+        PRONOUN CHANGES:
+        - "I" → "[Name]"
+        - "I'm" → "[Name] is"
+        - "my" → "his/her" (depending on the name chosen)
+        - "me" → "him/her" (depending on the name chosen)
 
-        # Reconstruct the sentence with replaced locations
-        transformed_tokens = []
-        for token in doc:
-            if token.ent_type_ == "GPE":  # Check if the token is a location
-                new_location = random.choice(location_names)
-                transformed_tokens.append(new_location)
-            else:
-                transformed_tokens.append(token.text)
+        Return only the converted sentence with the person's name."""
 
-        # Join tokens and fix spaces before punctuation
-        transformed_sentence = " ".join(transformed_tokens)
-        # Fix spaces before punctuation
-        transformed_sentence = re.sub(
-            r'\s+([?.!,"])', r'\1', transformed_sentence)
-        return transformed_sentence
+        user_prompt = sentence
+    
+        return self._call_openai(system_prompt, user_prompt, max_tokens=400)
 
-    def get_random_adjective_or_adverb(self):
-        adjectives = set()
-        adverbs = set()
 
-        for synset in wordnet.all_synsets(pos=wordnet.ADJ):
-            for lemma in synset.lemmas():
-                adjectives.add(lemma.name())
-
-        for synset in wordnet.all_synsets(pos=wordnet.ADV):
-            for lemma in synset.lemmas():
-                adverbs.add(lemma.name())
-
-        if adjectives and random.choice([True, False]):
-            word = random.choice(list(adjectives))
-            pos_tag = 'JJ'
-        elif adverbs:
-            word = random.choice(list(adverbs))
-            pos_tag = 'RB'
-        else:
-            return "", ""  # Return empty strings if no words are available
-
-        return word, pos_tag
 
     def vocab(self, sentence):
-        """
-        Insert an adjective or adverb into a sentence at an appropriate position,
-        but not at the beginning of the sentence.
-        Removes underscores from words before insertion.
-        """
-        tokens = word_tokenize(sentence)
-        word, pos_tag = self.get_random_adjective_or_adverb()
+        """Add descriptive adjectives or adverbs to enhance vocabulary using OpenAI"""
+        system_prompt = """You are a text perturbation assistant that adds one appropriate adjective or adverb to sentences to make them more descriptive.
 
-        if not word:
-            return sentence  # Return original sentence if no word was found
+        Examples of vocabulary enhancement:
+        - "I'm so tired" → "I'm so utterly tired"
+        - "I'm really hungry" → "I'm really incredibly hungry"
+        - "I'm not sure if I'm up for that" → "I'm genuinely not sure if I'm up for that"
+        - "I'm not sure if I can make it to the event" → "I'm honestly not sure if I can make it to the event"
+        - "I'm feeling a bit confused right now" → "I'm feeling a bit thoroughly confused right now"
+        - "I'm enjoying this day at home" → "I'm enjoying this peaceful day at home"
+        - "I love going on adventures" → "I love going on exciting adventures"
 
-        # Remove underscores from the word if present
-        word = word.replace('_', ' ')
+        VOCABULARY ENHANCEMENT RULES:
+        1. Add exactly ONE descriptive word (adjective or adverb)
+        2. Choose words that enhance the meaning naturally
+        3. Place adjectives before nouns (peaceful day, exciting adventures)
+        4. Place adverbs before adjectives or other adverbs (utterly tired, incredibly hungry)
+        5. Use words like: utterly, incredibly, genuinely, honestly, thoroughly, peaceful, exciting, amazing, wonderful, completely, absolutely, truly, etc.
+        6. The added word should fit naturally and enhance the original meaning
+        7. Do not change any existing words, only add one new word
+        8. Maintain the original sentence structure and meaning
 
-        tagged = nltk.pos_tag(tokens)
+        PLACEMENT GUIDELINES:
+        - Before adjectives: "so tired" → "so utterly tired"
+        - Before nouns: "this day" → "this peaceful day"  
+        - As sentence adverbs: "I'm not sure" → "I'm honestly not sure"
 
-        # Skip the first token to avoid adding at the beginning
-        insertion_made = False
+        Return only the enhanced sentence with one additional descriptive word."""
 
-        if pos_tag == 'JJ':  # If we have an adjective
-            # Start from the second token (index 1)
-            for i in range(1, len(tagged)):
-                token, tag = tagged[i]
-                # Insert before nouns
-                if tag in ['NN', 'NNS', 'NNP', 'NNPS']:
-                    tokens.insert(i, word)
-                    insertion_made = True
-                    break
-
-        elif pos_tag == 'RB':  # If we have an adverb
-            # Start from the second token (index 1)
-            for i in range(1, len(tagged)):
-                token, tag = tagged[i]
-                # Insert after verbs
-                if tag in ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']:
-                    tokens.insert(i + 1, word)
-                    insertion_made = True
-                    break
-
-        # If no appropriate position was found in the middle, append to the end
-        # but before any final punctuation
-        if not insertion_made:
-            if tokens[-1] in '.!?':
-                tokens.insert(len(tokens) - 1, word)
-            else:
-                tokens.append(word)
-
-        # Join tokens and clean up any double spaces that might have been created
-        new_sentence = ' '.join(tokens)
-        new_sentence = ' '.join(new_sentence.split())
-
-        # Make sure there's a space before punctuation
-        for punct in '.!?,:;':
-            new_sentence = new_sentence.replace(' ' + punct, punct)
-            new_sentence = new_sentence.replace(
-                punct + ' ' + punct, punct + punct)
-
-        return new_sentence
+        user_prompt = sentence
+            
+        return self._call_openai(system_prompt, user_prompt, max_tokens=400)
