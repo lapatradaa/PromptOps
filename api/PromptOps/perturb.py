@@ -29,7 +29,7 @@ from openai import OpenAI
 class Perturbation:
     def __init__(self):
         """Initialize the Perturbation class and set up OpenAI client"""
-        load_dotenv()
+        load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
         # Initialize verb processor
         api_key = os.getenv("OPENAI_API_KEY") or os.getenv("API_KEY_PERURBATION_KEY")
         if not api_key or api_key == "sk-your-api-key-here":
