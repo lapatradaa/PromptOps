@@ -16,6 +16,8 @@ services:
       worker --loglevel=warning --concurrency=2 --max-memory-per-child=512000
     volumes:
       - test-data:/data
+    env_file:                   
+    - ./api/.env
     environment:
       SHARED_DATA_DIR: /data
     restart: always
