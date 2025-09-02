@@ -17,7 +17,7 @@ services:
     volumes:
       - test-data:/data
     env_file:                   
-    - ./api/.env
+      - ./api/.env
     environment:
       SHARED_DATA_DIR: /data
     restart: always
